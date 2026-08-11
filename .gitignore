@@ -1,0 +1,17 @@
+# Este repo es PÚBLICO. Solo imágenes listas para publicarse.
+# Nada de credenciales, datos comerciales ni material del vault.
+
+.env
+*.env
+*.key
+*.pem
+
+# Nada de datos del vault, por si alguien copia una carpeta por error
+*.csv
+*.json
+!manifiesto.json
+
+# Sistema
+.DS_Store
+Thumbs.db
+desktop.ini
