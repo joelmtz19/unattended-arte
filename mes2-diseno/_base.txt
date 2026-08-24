@@ -1,0 +1,26 @@
+Sistema visual del arte de redes de unattended.io — referencia para las piezas del mes 2.
+Sacado de las 13 piezas del mes 1 que llegaron ya diseñadas.
+
+LIENZO
+  1080 x 1080 para feed. 1080 x 1920 para historias.
+
+FONDOS — se alternan a lo largo del carrusel para dar ritmo
+  oscuro : #0f0f10   texto #f4f1ea   acento #7ad0c6 (teal claro, el normal desaparece)
+  claro  : #fbfbfd   texto #1d1d1f   acento #0f6862 (teal de tinta)
+
+TIPOGRAFÍA
+  Archivo 700 para el titular, tracking -0.04em, line-height 1.05
+  Archivo 400 para el apoyo, 34px, color atenuado
+  IBM Plex Mono 400 para etiquetas, 21px, letter-spacing .16em, minúsculas o versalitas
+
+ANATOMÍA DE CADA SLIDE
+  arriba-izq   etiqueta entre paréntesis:  ( diagnóstico )   o   señal 01 / 05
+  centro-izq   el titular, alineado a la izquierda, máximo 3 renglones
+  bajo titular el apoyo, 2-3 renglones, nunca más
+  abajo-izq    una sola línea de acción en mono
+  abajo-der    unattended| con el pipe en el acento
+
+REGLAS QUE VIENEN DEL PLAN
+  Sin precios. Sin cifras de clientes. Sin logos de terceros.
+  Nada que suene a que unattended ya tiene clientes en hotelería.
+  El patrón de la industria se describe en tercera persona.

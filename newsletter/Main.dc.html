@@ -1,0 +1,59 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;700&family=IBM+Plex+Mono:wght@400&display=swap">
+  <style>
+    body { margin: 0; font-family: Archivo, Helvetica, Arial, sans-serif; }
+    a { color: #7ad0c6; } a:hover { color: #a8e2db; }
+  </style>
+</helmet>
+
+<!--
+  Portada del boletín nº 01, "Antes del primer número real". 1920x1080, que es
+  la proporción que LinkedIn pide para la cabecera de un artículo.
+
+  EL CONCEPTO SALE DEL PROPIO ARTÍCULO, no de decorarlo. El texto cuenta que la
+  primera versión traía una tabla de cifras que nadie generó, y que se borró.
+  Así que la portada muestra exactamente eso: las cuatro cifras falsas, tachadas
+  en teal — el mismo gesto del "era tuyo." del sitio.
+
+  El que solo ve la portada en el feed ya entendió la tesis sin abrir nada.
+-->
+<div style="width: 1920px; height: 1080px; box-sizing: border-box; background: #0f0f10; color: #f4f1ea; padding: 96px 110px; display: flex; flex-direction: column;">
+
+  <span style="font-family: 'IBM Plex Mono', monospace; font-size: 24px; letter-spacing: 0.18em; color: rgba(244,241,234,.55);">( boletín unattended · nº 01 )</span>
+
+  <div style="flex-grow: 1; display: flex; align-items: center; gap: 90px;">
+
+    <h1 style="margin: 0; font-weight: 700; font-size: 116px; line-height: 1.02; letter-spacing: -0.045em; max-width: 11ch; flex: none;">
+      antes del primer <span style="color: #7ad0c6;">número real</span>.
+    </h1>
+
+    <!-- Las cifras que NO van. Tachadas, en gris, con la línea en teal. -->
+    <div style="display: flex; flex-direction: column; gap: 26px; border-left: 1px solid rgba(244,241,234,.16); padding-left: 70px;">
+      <span style="font-family: 'IBM Plex Mono', monospace; font-size: 20px; letter-spacing: 0.14em; color: rgba(244,241,234,.42);">lo que esta edición NO trae</span>
+
+      <span style="position: relative; display: inline-block; align-self: flex-start; font-size: 46px; font-weight: 700; letter-spacing: -0.03em; color: #6b6b6d;">1,204 leads contestados<span style="position: absolute; left: -6px; right: -6px; top: 50%; height: 4px; background: #7ad0c6; border-radius: 2px;"></span></span>
+      <span style="position: relative; display: inline-block; align-self: flex-start; font-size: 46px; font-weight: 700; letter-spacing: -0.03em; color: #6b6b6d;">4 de 4 reportes a tiempo<span style="position: absolute; left: -6px; right: -6px; top: 50%; height: 4px; background: #7ad0c6; border-radius: 2px;"></span></span>
+      <span style="position: relative; display: inline-block; align-self: flex-start; font-size: 46px; font-weight: 700; letter-spacing: -0.03em; color: #6b6b6d;">867 capturas evitadas<span style="position: absolute; left: -6px; right: -6px; top: 50%; height: 4px; background: #7ad0c6; border-radius: 2px;"></span></span>
+      <span style="position: relative; display: inline-block; align-self: flex-start; font-size: 46px; font-weight: 700; letter-spacing: -0.03em; color: #6b6b6d;">31 casos escalados<span style="position: absolute; left: -6px; right: -6px; top: 50%; height: 4px; background: #7ad0c6; border-radius: 2px;"></span></span>
+
+      <span style="font-size: 27px; line-height: 1.5; color: rgba(244,241,234,.72); max-width: 30ch; margin-top: 10px;">Eran de muestra. Ningún cliente los generó todavía.</span>
+    </div>
+  </div>
+
+  <div style="display: flex; align-items: flex-end; justify-content: space-between;">
+    <span style="font-family: 'IBM Plex Mono', monospace; font-size: 22px; letter-spacing: 0.08em; color: rgba(244,241,234,.55);">unattended.io</span>
+    <span style="font-weight: 700; font-size: 40px; letter-spacing: -0.03em;">unattended<span style="color: #7ad0c6;">|</span></span>
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>
