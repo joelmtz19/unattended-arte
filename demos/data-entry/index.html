@@ -1,0 +1,1256 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta name="robots" content="noindex, nofollow">
+<meta name="googlebot" content="noindex, nofollow">
+
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Data Entry · unattended.io — demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Caveat:wght@500&display=swap" rel="stylesheet">
+<style>
+/* ══════════════════════════════════════════════════════════════════
+   Data Entry — demo de producto de unattended.io
+   Un solo archivo, sin CDN (salvo Google Fonts), sin fetch, vanilla JS.
+   Paleta y tipografía de unattended-site/src/app/globals.css.
+   Todos los datos son inventados. Ver README.md de esta carpeta.
+   ══════════════════════════════════════════════════════════════════ */
+
+:root{
+  --bg:#fbfbfd;
+  --panel:#ffffff;
+  --ink:#1d1d1f;
+  --muted:#57575c;
+  --faint:#6e6e73;
+  --line:rgba(29,29,31,.11);
+  --line-soft:rgba(29,29,31,.07);
+  --accent:#0f6862;
+  --accent-soft:#7ad0c6;
+  --accent-wash:rgba(15,104,98,.07);
+  --field:#101013;
+  --review:#8a5a06;
+  --review-wash:rgba(176,122,20,.13);
+  --review-line:rgba(138,90,6,.38);
+  --mono:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --sans:'Archivo',system-ui,-apple-system,'Segoe UI',sans-serif;
+}
+
+*{ box-sizing:border-box }
+html,body{ margin:0; padding:0 }
+body{
+  background:var(--bg);
+  color:var(--ink);
+  font-family:var(--sans);
+  font-size:15px;
+  line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3{ margin:0; font-weight:700; letter-spacing:-.035em; line-height:1.15 }
+p{ margin:0 0 10px; color:var(--muted) }
+p:last-child{ margin-bottom:0 }
+strong{ color:var(--ink); font-weight:600 }
+.mono{ font-family:var(--mono) }
+
+button{ font:inherit; cursor:pointer }
+button:focus-visible,[tabindex]:focus-visible,input:focus-visible,summary:focus-visible{
+  outline:2px solid var(--accent); outline-offset:2px;
+}
+
+/* ── Franja de demo ──────────────────────────────────────────────── */
+.strip{
+  position:sticky; top:0; z-index:40;
+  background:var(--field); color:#f5f5f7;
+  padding:9px 20px;
+  font-family:var(--mono); font-size:12px; letter-spacing:.02em;
+  display:flex; gap:10px; align-items:baseline; flex-wrap:wrap;
+}
+.strip b{ color:var(--accent-soft); font-weight:500 }
+.strip span{ color:rgba(245,245,247,.72) }
+
+/* ── Encabezado ──────────────────────────────────────────────────── */
+.wrap{ max-width:1240px; margin:0 auto; padding:0 20px 64px }
+header.top{ padding:30px 0 22px; border-bottom:1px solid var(--line) }
+.brand{
+  display:flex; align-items:baseline; gap:12px; flex-wrap:wrap;
+  margin-bottom:20px;
+}
+.wordmark{ font-size:19px; font-weight:700; letter-spacing:-.05em }
+.wordmark i{ font-style:normal; color:var(--accent) }
+.pill{
+  font-family:var(--mono); font-size:10.5px; letter-spacing:.16em; text-transform:uppercase;
+  color:var(--accent); border:1px solid rgba(15,104,98,.3);
+  border-radius:999px; padding:3px 10px;
+}
+header.top h1{ font-size:clamp(26px,4.2vw,40px); max-width:19ch; letter-spacing:-.045em }
+header.top .sub{ margin-top:14px; max-width:62ch; font-size:15.5px }
+
+/* ── Barra de control ────────────────────────────────────────────── */
+.bar{
+  display:flex; gap:14px; align-items:flex-end; justify-content:space-between;
+  flex-wrap:wrap; padding:20px 0 18px;
+}
+.eyebrow{
+  display:block; font-family:var(--mono); font-size:10.5px;
+  letter-spacing:.16em; text-transform:uppercase; color:var(--faint);
+  margin:0 0 9px;
+}
+.tabs{ display:flex; gap:8px; flex-wrap:wrap }
+.tab{
+  background:var(--panel); border:1px solid var(--line); border-radius:10px;
+  padding:9px 13px; text-align:left; color:var(--muted);
+  font-family:var(--mono); font-size:12px; line-height:1.35;
+  transition:border-color .15s, background .15s;
+}
+.tab b{ display:block; color:var(--ink); font-weight:500; font-size:12.5px }
+.tab:hover{ border-color:rgba(15,104,98,.4) }
+.tab[aria-pressed="true"]{ border-color:var(--accent); background:var(--accent-wash); color:var(--accent) }
+.tab[aria-pressed="true"] b{ color:var(--accent) }
+
+.go{
+  background:var(--field); color:#fff; border:1px solid var(--field);
+  border-radius:10px; padding:12px 20px; font-size:14.5px; font-weight:600;
+  letter-spacing:-.01em; transition:opacity .15s;
+}
+.go:hover{ opacity:.86 }
+.go[disabled]{ opacity:.4; cursor:default }
+.go.ghost{ background:transparent; color:var(--ink); border-color:var(--line) }
+
+/* ── Rejilla principal ───────────────────────────────────────────── */
+.grid{ display:grid; grid-template-columns:minmax(0,1.02fr) minmax(0,1fr); gap:22px; align-items:start }
+@media (max-width:980px){ .grid{ grid-template-columns:1fr } }
+
+/* ── El documento ────────────────────────────────────────────────── */
+.docwrap{ position:sticky; top:52px; max-height:calc(100vh - 66px); overflow:auto; padding-bottom:2px }
+@media (max-width:980px){ .docwrap{ position:static; max-height:none; overflow:visible } }
+
+.scanbar{
+  display:flex; gap:10px; align-items:center; justify-content:space-between;
+  background:var(--field); color:rgba(245,245,247,.72);
+  border-radius:10px 10px 0 0; padding:9px 14px;
+  font-family:var(--mono); font-size:11px; letter-spacing:.03em;
+}
+.scanbar b{ color:#fff; font-weight:400 }
+.scanbar .dot{ width:7px; height:7px; border-radius:50%; background:var(--accent-soft); display:inline-block; margin-right:7px }
+
+.sheet{
+  position:relative; overflow:hidden;
+  background:
+    linear-gradient(178deg, rgba(29,29,31,.045), rgba(255,255,255,0) 22%),
+    linear-gradient(#fff,#fdfdfb);
+  border:1px solid var(--line); border-top:0; border-radius:0 0 10px 10px;
+  padding:26px 26px 22px;
+  font-size:12px; color:#2a2a2d;
+  box-shadow:0 18px 40px -34px rgba(29,29,31,.5);
+}
+.sheet::after{
+  content:'EJEMPLO';
+  position:absolute; top:44%; left:50%;
+  transform:translate(-50%,-50%) rotate(-24deg);
+  font-family:var(--sans); font-weight:700; font-size:clamp(52px,11vw,104px);
+  letter-spacing:.12em; color:rgba(29,29,31,.045);
+  pointer-events:none; white-space:nowrap;
+}
+.sheet > *{ position:relative; z-index:1 }
+
+.doc-head{ display:flex; justify-content:space-between; gap:18px; flex-wrap:wrap; border-bottom:1.5px solid #2a2a2d; padding-bottom:12px }
+.doc-emisor h3{ font-size:14.5px; letter-spacing:-.02em; margin-bottom:3px }
+.doc-emisor .addr{ color:#6b6b70; font-size:10.5px; line-height:1.5 }
+.doc-type{ text-align:right; font-family:var(--mono); font-size:10.5px; color:#6b6b70; line-height:1.7 }
+.doc-type .big{ font-family:var(--sans); font-size:13px; font-weight:700; color:#2a2a2d; letter-spacing:.06em }
+
+.kv{ display:grid; grid-template-columns:auto 1fr; gap:2px 10px; font-family:var(--mono); font-size:10.5px; line-height:1.65 }
+.kv dt{ color:#8a8a90; white-space:nowrap }
+.kv dd{ margin:0; color:#2a2a2d; word-break:break-word }
+
+.doc-grid{ display:grid; grid-template-columns:1fr 1fr; gap:16px; padding:14px 0 4px }
+@media (max-width:520px){ .doc-grid{ grid-template-columns:1fr } }
+.doc-grid section h4{
+  margin:0 0 6px; font-family:var(--mono); font-size:9.5px; letter-spacing:.14em;
+  text-transform:uppercase; color:#8a8a90; font-weight:400;
+}
+
+table.items{ width:100%; border-collapse:collapse; margin:12px 0 0; font-size:11px }
+table.items th{
+  text-align:left; font-family:var(--mono); font-size:9px; letter-spacing:.12em;
+  text-transform:uppercase; color:#8a8a90; font-weight:400;
+  border-bottom:1px solid #cfcfd3; padding:0 6px 5px 0;
+}
+table.items td{ padding:7px 6px 7px 0; border-bottom:1px solid #ececee; vertical-align:top; line-height:1.4 }
+table.items .num{ text-align:right; font-family:var(--mono); white-space:nowrap }
+@media (max-width:480px){ table.items .hide-s{ display:none } }
+
+.totals{ margin-top:12px; display:flex; justify-content:flex-end }
+.totals dl{ margin:0; min-width:min(260px,100%); font-family:var(--mono); font-size:11px }
+.totals .row{ display:flex; justify-content:space-between; gap:16px; padding:4px 0 }
+.totals .row.tot{ border-top:1.5px solid #2a2a2d; margin-top:4px; padding-top:7px; font-size:13px; font-weight:500 }
+.totals .row span:first-child{ color:#8a8a90 }
+.letra{ margin-top:8px; text-align:right; font-size:9.5px; color:#8a8a90; font-family:var(--mono); letter-spacing:.02em }
+
+.doc-foot{ margin-top:16px; padding-top:10px; border-top:1px dashed #d6d6da; font-family:var(--mono); font-size:9.5px; color:#9a9aa0; line-height:1.6 }
+
+/* La anotación a mano en el margen: escaneada y borrosa a propósito. */
+.hand{
+  display:inline-block; margin:12px 0 0;
+  font-family:'Caveat',ui-rounded,cursive; font-size:26px; color:#2f4d8a;
+  transform:rotate(-6deg); transform-origin:left center;
+  filter:blur(1.15px); opacity:.85;
+  padding:2px 7px; border-radius:6px; white-space:nowrap;
+}
+.hand small{ display:block; font-size:15px; opacity:.85; margin-top:-2px }
+/* El dígito que el escaneo se comió: más borroso que el resto, a propósito. */
+.smudge{ font-style:normal; filter:blur(2.4px); opacity:.7; letter-spacing:.03em }
+
+/* Ayuda de lectura debajo del documento */
+.hint{
+  border:1px solid var(--line); border-radius:10px; background:var(--panel);
+  padding:13px 15px; margin:0 0 12px; font-size:12.5px; color:var(--muted); line-height:1.55;
+}
+.hint b{ color:var(--ink); font-weight:600 }
+.hint .eyebrow{ margin-bottom:7px }
+
+/* Regiones resaltables del documento */
+.rg{
+  border-radius:3px; padding:1px 3px; margin:0 -3px;
+  transition:background .16s, box-shadow .16s, color .16s;
+}
+.rg.hl{ background:rgba(122,208,198,.5); box-shadow:0 0 0 1px var(--accent) }
+.rg.hl-rev{ background:var(--review-wash); box-shadow:0 0 0 1px var(--review-line) }
+.hand.hl-rev{ filter:blur(1.15px); background:var(--review-wash); box-shadow:0 0 0 1px var(--review-line) }
+
+/* ── Panel del agente ────────────────────────────────────────────── */
+.panel{ border:1px solid var(--line); border-radius:12px; background:var(--panel); overflow:hidden }
+.panel-head{ padding:16px 18px 14px; border-bottom:1px solid var(--line-soft) }
+.panel-head h2{ font-size:17px; letter-spacing:-.03em }
+.panel-head .meta{ margin-top:5px; font-family:var(--mono); font-size:11px; color:var(--faint) }
+
+.log{
+  margin:0; padding:12px 18px; background:var(--field); color:rgba(245,245,247,.8);
+  font-family:var(--mono); font-size:11px; line-height:1.75; min-height:52px;
+  max-height:150px; overflow:auto;
+}
+.log div{ display:flex; gap:9px }
+.log .t{ color:rgba(122,208,198,.75); flex:none }
+.log .ok{ color:var(--accent-soft) }
+.log .rev{ color:#e8b45c }
+
+.fields{ padding:6px 0 0 }
+.f{
+  display:block; width:100%; text-align:left; background:none; border:0;
+  border-bottom:1px solid var(--line-soft); padding:11px 18px 12px;
+  transition:background .15s;
+}
+.f:hover,.f:focus-visible{ background:var(--accent-wash) }
+.f.review:hover,.f.review:focus-visible{ background:var(--review-wash) }
+.f-top{ display:flex; justify-content:space-between; align-items:baseline; gap:12px }
+.f-label{ font-size:12.5px; color:var(--faint); font-weight:500 }
+.f-conf{ font-size:11px; color:var(--faint); flex:none }
+.f-val{ font-size:14.5px; color:var(--ink); font-weight:500; word-break:break-word; margin-top:2px; line-height:1.35 }
+.f-raw{ font-family:var(--mono); font-size:10.5px; color:var(--faint); margin-top:3px; word-break:break-word }
+.f-raw b{ color:var(--muted); font-weight:400 }
+.f-note{ font-size:11.5px; color:var(--muted); margin-top:4px; line-height:1.45 }
+.f-note .yes{ color:var(--accent); font-weight:600 }
+.f-note .no{ color:var(--review); font-weight:600 }
+.bar-c{ height:2px; background:var(--line-soft); border-radius:2px; margin-top:7px; overflow:hidden }
+.bar-c i{ display:block; height:100%; background:var(--accent-soft); border-radius:2px }
+.f.review .bar-c i{ background:#d9a445 }
+.badge{
+  display:inline-block; font-family:var(--mono); font-size:9.5px; letter-spacing:.13em;
+  text-transform:uppercase; padding:2px 7px; border-radius:999px; margin-left:8px; vertical-align:1px;
+}
+.badge.rev{ color:var(--review); background:var(--review-wash); border:1px solid var(--review-line) }
+.badge.human{ color:var(--accent); background:var(--accent-wash); border:1px solid rgba(15,104,98,.28) }
+.f.review{ background:rgba(176,122,20,.055); border-left:2px solid var(--review-line) }
+
+.appear{ animation:slide .22s ease-out both }
+@keyframes slide{ from{ opacity:0; transform:translateY(5px) } to{ opacity:1; transform:none } }
+
+/* ── Tarjeta de revisión humana ──────────────────────────────────── */
+.rev-card{
+  margin:12px 0 2px; border:1px solid var(--review-line); border-radius:10px;
+  background:#fffdf8; padding:14px 15px;
+}
+.rev-card h4{ margin:0 0 8px; font-size:13.5px; color:var(--review); letter-spacing:-.02em }
+.rev-card p{ font-size:12.5px; margin-bottom:9px }
+.crop{
+  background:#fbfbf7; border:1px dashed var(--review-line); border-radius:8px;
+  padding:10px 14px; margin:0 0 10px; text-align:center; overflow:hidden;
+}
+.crop .zoom{
+  font-family:'Caveat',ui-rounded,cursive; font-size:44px; color:#2f4d8a;
+  filter:blur(1.5px); opacity:.85; transform:rotate(-4deg); display:inline-block;
+}
+.crop .cap{ display:block; margin-top:6px; font-family:var(--mono); font-size:10px; color:var(--faint) }
+.checks{ margin:0 0 10px; padding:0; list-style:none; font-family:var(--mono); font-size:11px; line-height:1.8 }
+.checks li{ display:flex; gap:8px; align-items:baseline }
+.checks .yes{ color:var(--accent) }
+.checks .no{ color:var(--review) }
+.opts{ display:flex; gap:8px; flex-wrap:wrap; margin-top:2px }
+.opt{
+  border:1px solid var(--line); background:#fff; border-radius:8px; padding:9px 13px;
+  font-family:var(--mono); font-size:12.5px; color:var(--ink); transition:border-color .15s, background .15s;
+}
+.opt:hover{ border-color:var(--accent); background:var(--accent-wash) }
+.opt.sec{ font-family:var(--sans); font-size:13px; color:var(--muted) }
+.rfc-in{ display:flex; gap:8px; flex-wrap:wrap; margin-bottom:9px }
+input[type=text]{
+  flex:1 1 190px; min-width:0; font-family:var(--mono); font-size:13.5px; letter-spacing:.06em;
+  text-transform:uppercase; padding:9px 11px; border:1px solid var(--line);
+  border-radius:8px; background:#fff; color:var(--ink);
+}
+.rfc-out{ font-family:var(--mono); font-size:11px; line-height:1.75; margin:0 }
+
+/* ── Carga al sistema ────────────────────────────────────────────── */
+.load{ padding:15px 18px 18px; border-top:1px solid var(--line) }
+.load .status{
+  font-family:var(--mono); font-size:11.5px; color:var(--muted);
+  display:flex; gap:9px; align-items:baseline; margin-bottom:11px; line-height:1.6;
+}
+.load .status .k{ color:var(--faint); flex:none }
+.receipt{
+  background:var(--field); color:rgba(245,245,247,.82); border-radius:10px;
+  padding:13px 15px; font-family:var(--mono); font-size:11px; line-height:1.85; margin:0;
+  white-space:pre-wrap; word-break:break-word;
+}
+.receipt b{ color:var(--accent-soft); font-weight:400 }
+
+/* ── Notas y validador ──────────────────────────────────────────── */
+.note{
+  border:1px solid var(--line); border-left:2.5px solid var(--accent);
+  border-radius:0 10px 10px 0; background:var(--panel);
+  padding:16px 18px; margin:22px 0 0;
+}
+.note p{ font-size:14px }
+.two{ display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-top:22px }
+@media (max-width:820px){ .two{ grid-template-columns:1fr } }
+.card{ border:1px solid var(--line); border-radius:12px; background:var(--panel); padding:18px 20px 20px }
+.card h3{ font-size:16px; margin-bottom:9px; letter-spacing:-.03em }
+.card p{ font-size:13.5px }
+.chips{ display:flex; gap:7px; flex-wrap:wrap; margin:10px 0 12px }
+.chip{
+  border:1px solid var(--line); background:#fff; border-radius:999px; padding:5px 11px;
+  font-family:var(--mono); font-size:11px; color:var(--muted);
+}
+.chip:hover{ border-color:var(--accent); color:var(--accent) }
+.rules{ margin:12px 0 0; padding:0; list-style:none; font-family:var(--mono); font-size:11.5px; line-height:1.85 }
+.rules li{ display:flex; gap:9px; align-items:baseline }
+.rules .yes{ color:var(--accent); flex:none }
+.rules .no{ color:var(--review); flex:none }
+.rules .dim{ color:var(--faint); flex:none }
+
+footer.end{
+  margin-top:34px; padding-top:16px; border-top:1px solid var(--line);
+  font-family:var(--mono); font-size:11px; color:var(--faint); line-height:1.8;
+}
+
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{ animation-duration:.001ms !important; transition-duration:.001ms !important }
+}
+</style>
+</head>
+<body>
+
+<div class="strip">
+  <b>Demo · datos de ejemplo.</b>
+  <span>Así se ve el agente trabajando. Los datos son simulados.</span>
+</div>
+
+<div class="wrap">
+
+  <header class="top">
+    <div class="brand">
+      <span class="wordmark">unattended<i>.io</i></span>
+      <span class="pill">Data Entry</span>
+    </div>
+    <h1>Entra un documento. Salen campos que tu sistema sí puede recibir.</h1>
+    <p class="sub">Extrae datos de documentos, correos y formularios, los normaliza y los
+    carga en tu sistema, con validación de RFC y campos clave. Cuando un dato no se lee
+    o no cuadra, se detiene y lo pasa a una persona.</p>
+  </header>
+
+  <div class="bar">
+    <div>
+      <span class="eyebrow">( bandeja de entrada · 2 documentos de ejemplo )</span>
+      <div class="tabs" id="tabs">
+        <button class="tab" data-doc="factura" aria-pressed="true">
+          <b>factura-4471.pdf</b>Distribuidora del Norte · escaneada
+        </button>
+        <button class="tab" data-doc="honorarios" aria-pressed="false">
+          <b>recibo-honorarios-marzo.pdf</b>M. F. Solís Trejo · persona física
+        </button>
+      </div>
+    </div>
+    <button class="go" id="run">Procesar documento</button>
+  </div>
+
+  <div class="grid">
+
+    <!-- ═══════════ EL DOCUMENTO ═══════════ -->
+    <div class="docwrap">
+      <div class="hint">
+        <span class="eyebrow">( cómo leerlo )</span>
+        Pasa el cursor —o toca, si estás en el celular— por cualquier campo de la ficha
+        extraída y <b>se prende en el documento el lugar exacto de donde salió</b>. El
+        campo en ámbar es el que el agente no pudo resolver.
+      </div>
+      <div class="scanbar">
+        <span><span class="dot"></span><b id="scan-name">factura-4471.pdf</b></span>
+        <span id="scan-meta">PDF · 1 página · escaneado 200 dpi</span>
+      </div>
+
+      <!-- ── Documento 1: factura ── -->
+      <div class="sheet" id="sheet-factura">
+        <div class="doc-head">
+          <div class="doc-emisor">
+            <h3><span class="rg" id="r-emisor">DISTRIBUIDORA DEL NORTE, S.A. DE C.V.</span></h3>
+            <div class="addr">Av. Paseo de los Insurgentes 1420, Col. Industrial<br>
+            Monterrey, N.L. · C.P. 64000 · Tel. 81 0000 0000</div>
+          </div>
+          <div class="doc-type">
+            <span class="big">FACTURA</span><br>
+            Serie A · Folio <span class="rg" id="r-folio">4471</span><br>
+            RFC <span class="rg" id="r-rfc-emisor">DNO0405129K5</span><br>
+            Régimen 601 · General de Ley
+          </div>
+        </div>
+
+        <div class="doc-grid">
+          <section>
+            <h4>Receptor</h4>
+            <dl class="kv">
+              <dt>Nombre</dt><dd><span class="rg" id="r-receptor">CLÍNICA VÉRTICE, S.C.</span></dd>
+              <dt>RFC</dt><dd><span class="rg" id="r-rfc-receptor">CVE180322T47</span></dd>
+              <dt>Uso CFDI</dt><dd>G03 · Gastos en general</dd>
+              <dt>Domicilio</dt><dd>Av. Ejemplo 88, CDMX, C.P. 03100</dd>
+            </dl>
+          </section>
+          <section>
+            <h4>Comprobante</h4>
+            <dl class="kv">
+              <dt>Folio fiscal</dt><dd><span class="rg" id="r-uuid">A7F3C21D-9B45-4E80-91AC-6D2F4B08E551</span></dd>
+              <dt>Fecha</dt><dd><span class="rg" id="r-fecha">05/03/2026</span> 11:42</dd>
+              <dt>Expedido en</dt><dd>64000, Monterrey, N.L.</dd>
+              <dt>Moneda</dt><dd><span class="rg" id="r-moneda">MXN</span></dd>
+            </dl>
+          </section>
+        </div>
+
+        <table class="items">
+          <thead>
+            <tr>
+              <th style="width:52px">Cant.</th>
+              <th>Descripción</th>
+              <th class="num hide-s" style="width:86px">P. unitario</th>
+              <th class="num" style="width:92px">Importe</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td class="num">40</td><td>Guantes de nitrilo talla M, caja c/100 pz</td><td class="num hide-s">285.00</td><td class="num">11,400.00</td></tr>
+            <tr><td class="num">25</td><td>Gasas estériles 10×10 cm, caja c/200 pz</td><td class="num hide-s">412.80</td><td class="num">10,320.00</td></tr>
+            <tr><td class="num">8</td><td>Termómetro infrarrojo clínico, mod. TI-40</td><td class="num hide-s">3,325.00</td><td class="num">26,600.00</td></tr>
+          </tbody>
+        </table>
+
+        <div class="totals">
+          <dl>
+            <div class="row"><span>Subtotal</span><span class="rg" id="r-subtotal">48,320.00</span></div>
+            <div class="row"><span>IVA 16%</span><span class="rg" id="r-iva">7,731.20</span></div>
+            <div class="row tot"><span>Total</span><span class="rg" id="r-total">56,051.20</span></div>
+          </dl>
+        </div>
+        <div class="letra">CINCUENTA Y SEIS MIL CINCUENTA Y UN PESOS 20/100 M.N.</div>
+
+        <div class="doc-grid" style="padding-top:14px">
+          <section>
+            <h4>Pago</h4>
+            <dl class="kv">
+              <dt>Forma</dt><dd><span class="rg" id="r-forma">99 · Por definir</span></dd>
+              <dt>Método</dt><dd>PPD · Pago en parcialidades o diferido</dd>
+              <dt>Condiciones</dt><dd><span class="rg" id="r-cond">30 días</span></dd>
+            </dl>
+          </section>
+          <section>
+            <h4>Sello y anotaciones de recepción</h4>
+            <div class="kv"><dt>Cert.</dt><dd style="word-break:break-all">00001000000512345678</dd></div>
+            <div class="hand" id="r-oc">OC-447<i class="smudge">1</i><small>recibido 05/03</small></div>
+          </section>
+        </div>
+
+        <div class="doc-foot">
+          Documento de ejemplo creado para esta demo. No es un CFDI válido, no lo emitió
+          ninguna empresa real y el folio fiscal no existe en el SAT.
+        </div>
+      </div>
+
+      <!-- ── Documento 2: recibo de honorarios ── -->
+      <div class="sheet" id="sheet-honorarios" hidden>
+        <div class="doc-head">
+          <div class="doc-emisor">
+            <h3><span class="rg" id="h-emisor">MARÍA FERNANDA SOLÍS TREJO</span></h3>
+            <div class="addr">Persona física con actividad empresarial y profesional<br>
+            Ciudad de México · Tel. 55 0000 0000</div>
+          </div>
+          <div class="doc-type">
+            <span class="big">RECIBO DE HONORARIOS</span><br>
+            Serie H · Folio <span class="rg" id="h-folio">218</span><br>
+            RFC <span class="rg" id="h-rfc-emisor">SOTM890417HZ2</span><br>
+            Régimen 612
+          </div>
+        </div>
+
+        <div class="doc-grid">
+          <section>
+            <h4>Receptor</h4>
+            <dl class="kv">
+              <dt>Nombre</dt><dd><span class="rg" id="h-receptor">CLÍNICA VÉRTICE, S.C.</span></dd>
+              <dt>RFC</dt><dd><span class="rg" id="h-rfc-receptor">CVE180322T47</span></dd>
+              <dt>Uso CFDI</dt><dd>G03 · Gastos en general</dd>
+            </dl>
+          </section>
+          <section>
+            <h4>Comprobante</h4>
+            <dl class="kv">
+              <dt>Fecha</dt><dd><span class="rg" id="h-fecha">18/03/2026</span> 09:15</dd>
+              <dt>Moneda</dt><dd>MXN</dd>
+              <dt>Concepto</dt><dd>Servicios de asesoría en control de inventarios, marzo 2026</dd>
+            </dl>
+          </section>
+        </div>
+
+        <table class="items">
+          <thead>
+            <tr><th style="width:52px">Cant.</th><th>Descripción</th><th class="num" style="width:96px">Importe</th></tr>
+          </thead>
+          <tbody>
+            <tr><td class="num">1</td><td>Honorarios por servicios profesionales · marzo 2026</td><td class="num">18,500.00</td></tr>
+          </tbody>
+        </table>
+
+        <div class="totals">
+          <dl>
+            <div class="row"><span>Subtotal</span><span class="rg" id="h-subtotal">18,500.00</span></div>
+            <div class="row"><span>IVA 16%</span><span class="rg" id="h-iva">2,960.00</span></div>
+            <div class="row"><span>Ret. ISR 10%</span><span class="rg" id="h-isr">−1,850.00</span></div>
+            <div class="row"><span>Ret. IVA 10.6667%</span><span class="rg" id="h-riva">−1,973.33</span></div>
+            <div class="row tot"><span>Total</span><span class="rg" id="h-total">17,636.67</span></div>
+          </dl>
+        </div>
+        <div class="letra">DIECISIETE MIL SEISCIENTOS TREINTA Y SEIS PESOS 67/100 M.N.</div>
+
+        <div class="doc-foot">
+          Documento de ejemplo creado para esta demo. El nombre y el RFC son inventados;
+          el RFC trae un error de captura a propósito, para enseñar qué hace el agente
+          cuando un dato no pasa la validación.
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ═══════════ EL AGENTE ═══════════ -->
+    <div class="panel">
+      <div class="panel-head">
+        <h2>Ficha extraída</h2>
+        <div class="meta" id="panel-meta">Umbral de confianza: 90%. Debajo de eso, el campo no se carga solo.</div>
+      </div>
+
+      <div class="log" id="log" aria-live="polite" aria-label="Bitácora del agente">
+        <div><span class="t">--:--</span><span>Documento en espera. Presiona «Procesar documento».</span></div>
+      </div>
+
+      <div class="fields" id="fields"></div>
+
+      <div class="load">
+        <div class="status"><span class="k">estado</span><span id="load-status">Sin procesar.</span></div>
+        <button class="go" id="load-btn" disabled>Cargar al sistema</button>
+        <pre class="receipt" id="receipt" hidden></pre>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="two">
+    <div class="card">
+      <h3>Probar el validador de RFC</h3>
+      <p>El mismo validador que corre sobre el documento. Escribe cualquier RFC —el tuyo,
+      el de un proveedor— y mira qué revisa. Se valida aquí, en tu navegador: no se manda
+      a ningún lado ni se guarda.</p>
+      <div class="chips" id="chips">
+        <button class="chip" data-rfc="DNO0405129K5">DNO0405129K5</button>
+        <button class="chip" data-rfc="SOTM890417H22">SOTM890417H22</button>
+        <button class="chip" data-rfc="SOTM890417HZ2">SOTM890417HZ2</button>
+        <button class="chip" data-rfc="XAXX010101000">XAXX010101000</button>
+        <button class="chip" data-rfc="CVE18032T47">CVE18032T47</button>
+      </div>
+      <div class="rfc-in">
+        <input type="text" id="rfc-input" placeholder="ABC010203XY9" maxlength="20"
+               autocomplete="off" spellcheck="false" aria-label="RFC a validar">
+        <button class="go ghost" id="rfc-btn">Validar</button>
+      </div>
+      <ul class="rules" id="rfc-out"></ul>
+    </div>
+
+    <div class="card">
+      <h3>Qué no hace</h3>
+      <p>No adivina. Si el documento no lo dice, si el escaneo no se lee o si el dato no
+      pasa la validación, el campo se queda detenido y alguien lo resuelve en veinte
+      segundos. El registro no se carga a medias: se carga cuando está completo.</p>
+      <p>Un agente que siempre contesta algo también contesta cuando no sabe. Ahí es
+      donde nacen los datos sucios que después nadie puede rastrear.</p>
+      <ul class="rules">
+        <li><span class="yes">✓</span><span>RFC: longitud, estructura, fecha y dígito verificador</span></li>
+        <li><span class="yes">✓</span><span>Aritmética: subtotal, impuestos, retenciones y total</span></li>
+        <li><span class="yes">✓</span><span>Fechas normalizadas a AAAA-MM-DD</span></li>
+        <li><span class="dim">·</span><span>La homoclave no se puede derivar; solo se valida su dígito</span></li>
+        <li><span class="no">✗</span><span>Nada por debajo del umbral entra al sistema sin una persona</span></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="note">
+    <span class="eyebrow">( qué es esto y qué no )</span>
+    <p>Una escena simulada de cómo trabaja el agente Data Entry sobre dos documentos
+    inventados. <strong>Distribuidora del Norte</strong> y <strong>Clínica Vértice</strong> no
+    existen; los RFC, folios, importes y nombres se hicieron para esta demo. Los tiempos y
+    los porcentajes de confianza son del escenario, no resultados medidos. El alcance real
+    —qué documentos, qué sistema destino, qué umbral— sale del diagnóstico.</p>
+  </div>
+
+  <footer class="end">
+    unattended.io · Ciudad de México · Demo interna. Datos de ejemplo.
+  </footer>
+
+</div>
+
+<script>
+(function(){
+  'use strict';
+
+  var REDUCE = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var $ = function(id){ return document.getElementById(id); };
+
+  /* ══════════ Validador de RFC ══════════════════════════════════════
+     Estructura + fecha + dígito verificador real (algoritmo del SAT).
+     Los RFC genéricos XAXX/XEXX se aceptan como excepción documentada. */
+
+  var TABLA = '0123456789ABCDEFGHIJKLMN&OPQRSTUVWXYZ ';
+  var GENERICOS = { 'XAXX010101000':1, 'XEXX010101000':1 };
+
+  function valorChar(c){
+    if (c === ' ') return 37;
+    if (c === 'Ñ') return 38;
+    var i = TABLA.indexOf(c);
+    return i < 0 ? -1 : i;
+  }
+
+  function digitoVerificador(base12){
+    // base12: 12 caracteres (los 12 primeros de una persona física) o
+    // 11 de una moral, a la que se le antepone un espacio.
+    var s = base12.length === 11 ? ' ' + base12 : base12;
+    if (s.length !== 12) return null;
+    var suma = 0;
+    for (var i = 0; i < 12; i++){
+      var v = valorChar(s.charAt(i));
+      if (v < 0) return null;
+      suma += v * (13 - i);
+    }
+    var r = suma % 11;
+    if (r === 0) return '0';
+    if (r === 10) return 'A';
+    return String(11 - r);
+  }
+
+  function diasDelMes(mm, yy){
+    var dias = [31,28,31,30,31,30,31,31,30,31,30,31];
+    if (mm === 2){
+      // El año viene en dos dígitos: no sabemos el siglo. Se acepta 29 de
+      // febrero si es bisiesto en cualquiera de los dos siglos posibles.
+      var bis = function(y){ return (y % 4 === 0 && y % 100 !== 0) || y % 400 === 0; };
+      return (bis(1900 + yy) || bis(2000 + yy)) ? 29 : 28;
+    }
+    return dias[mm - 1];
+  }
+
+  function validarRFC(entrada){
+    var rfc = String(entrada || '').toUpperCase().replace(/[\s\-]/g, '');
+    var out = { rfc: rfc, reglas: [], ok: false, tipo: null, dv: null };
+    var add = function(estado, texto){ out.reglas.push({ estado: estado, texto: texto }); };
+
+    if (!rfc){ add('no','Escribe un RFC.'); return out; }
+
+    if (GENERICOS[rfc]){
+      out.tipo = 'genérico';
+      add('yes','13 caracteres · RFC genérico del SAT');
+      add('dim','Los genéricos XAXX010101000 y XEXX010101000 no cumplen el dígito verificador. Se aceptan como excepción.');
+      out.ok = true;
+      return out;
+    }
+
+    if (rfc.length !== 12 && rfc.length !== 13){
+      add('no', rfc.length + ' caracteres. Un RFC tiene 12 (moral) o 13 (física).');
+      return out;
+    }
+    var fisica = rfc.length === 13;
+    out.tipo = fisica ? 'persona física' : 'persona moral';
+    add('yes', rfc.length + ' caracteres · ' + out.tipo);
+
+    var re = fisica ? /^[A-ZÑ&]{4}[0-9]{6}[A-Z0-9]{3}$/ : /^[A-ZÑ&]{3}[0-9]{6}[A-Z0-9]{3}$/;
+    if (!re.test(rfc)){
+      add('no','Estructura: ' + (fisica ? '4' : '3') + ' letras + 6 dígitos de fecha + 3 de homoclave. No cuadra.');
+      return out;
+    }
+    add('yes','Estructura: ' + (fisica ? '4' : '3') + ' letras · 6 dígitos de fecha · 3 de homoclave');
+
+    var f = rfc.substr(fisica ? 4 : 3, 6);
+    var yy = parseInt(f.substr(0,2), 10), mm = parseInt(f.substr(2,2), 10), dd = parseInt(f.substr(4,2), 10);
+    if (mm < 1 || mm > 12 || dd < 1 || dd > diasDelMes(mm, yy)){
+      add('no','Fecha ' + f + ': el día o el mes no existen.');
+      return out;
+    }
+    add('yes','Fecha ' + f + ' → ' + f.substr(4,2) + '/' + f.substr(2,2) + '/' + f.substr(0,2) + ' válida');
+
+    var base = rfc.substring(0, rfc.length - 1);
+    var esperado = digitoVerificador(base);
+    var trae = rfc.charAt(rfc.length - 1);
+    out.dv = esperado;
+    if (esperado === trae){
+      add('yes','Dígito verificador «' + trae + '» correcto');
+      out.ok = true;
+    } else {
+      add('no','Dígito verificador: trae «' + trae + '» y con esos ' + base.length + ' caracteres tendría que ser «' + esperado + '»');
+      add('dim','Alguno de los ' + rfc.length + ' caracteres está mal. Cuál, no se puede saber desde aquí.');
+    }
+    return out;
+  }
+
+  /* ══════════ Los dos documentos ═══════════════════════════════════ */
+
+  var DOCS = {
+    factura: {
+      archivo: 'factura-4471.pdf',
+      meta: 'PDF · 1 página · escaneado 200 dpi',
+      sheet: 'sheet-factura',
+      destino: 'ERP de ejemplo · tabla cuentas_por_pagar',
+      folioInterno: 'CXP-2026-0417',
+      pasos: [
+        'abriendo factura-4471.pdf · 1 página',
+        'reconociendo texto (OCR) · 200 dpi',
+        'tipo de documento → factura (CFDI 4.0)',
+        'extrayendo 13 campos',
+        'validando RFC del emisor y del receptor',
+        'cuadrando importes: subtotal + IVA = total',
+        'normalizando fechas a AAAA-MM-DD',
+        { t:'1 campo por debajo del umbral → revisión humana', c:'rev' }
+      ],
+      campos: [
+        { k:'tipo', r:null, label:'Tipo de documento', val:'Factura · CFDI 4.0', conf:99 },
+        { k:'emisor', r:'r-emisor', label:'Emisor', val:'Distribuidora del Norte, S.A. de C.V.',
+          raw:'DISTRIBUIDORA DEL NORTE, S.A. DE C.V.', conf:98, note:'Mayúsculas y acentos normalizados.' },
+        { k:'rfc_emisor', r:'r-rfc-emisor', label:'RFC del emisor', val:'DNO0405129K5', conf:99, rfc:true },
+        { k:'receptor', r:'r-receptor', label:'Receptor', val:'Clínica Vértice, S.C.',
+          raw:'CLÍNICA VÉRTICE, S.C.', conf:99 },
+        { k:'rfc_receptor', r:'r-rfc-receptor', label:'RFC del receptor', val:'CVE180322T47', conf:99, rfc:true },
+        { k:'uuid', r:'r-uuid', label:'Folio fiscal', val:'A7F3C21D-9B45-4E80-91AC-6D2F4B08E551', conf:97,
+          note:'32 caracteres hexadecimales en el formato 8-4-4-4-12. <span class="yes">Formato correcto</span> (existencia ante el SAT no se comprueba aquí).' },
+        { k:'fecha', r:'r-fecha', label:'Fecha de emisión', val:'2026-03-05', raw:'05/03/2026', conf:96,
+          note:'Formato dd/mm/aaaa confirmado con la anotación de recepción del mismo documento.' },
+        { k:'subtotal', r:'r-subtotal', label:'Subtotal', val:'48,320.00 MXN', conf:99,
+          note:'Suma de los 3 conceptos: 11,400.00 + 10,320.00 + 26,600.00. <span class="yes">Cuadra</span>.' },
+        { k:'iva', r:'r-iva', label:'IVA trasladado (16%)', val:'7,731.20 MXN', conf:99,
+          note:'48,320.00 × 0.16 = 7,731.20. <span class="yes">Cuadra</span>.' },
+        { k:'total', r:'r-total', label:'Total', val:'56,051.20 MXN', conf:99,
+          note:'Subtotal + IVA = total. <span class="yes">Cuadra</span>.' },
+        { k:'forma', r:'r-forma', label:'Forma de pago', val:'99 · Por definir', raw:'99 - Por definir', conf:95 },
+        { k:'venc', r:'r-cond', label:'Vencimiento', val:'2026-04-04', raw:'30 días', conf:93,
+          note:'Calculado: fecha de emisión + 30 días. El documento no trae la fecha escrita.' },
+        { k:'oc', r:'r-oc', label:'Orden de compra', conf:54, review:'oc' }
+      ]
+    },
+
+    honorarios: {
+      archivo: 'recibo-honorarios-marzo.pdf',
+      meta: 'PDF · 1 página · nativo (texto)',
+      sheet: 'sheet-honorarios',
+      destino: 'ERP de ejemplo · tabla cuentas_por_pagar',
+      folioInterno: 'CXP-2026-0421',
+      pasos: [
+        'abriendo recibo-honorarios-marzo.pdf · 1 página',
+        'texto nativo · no hace falta OCR',
+        'tipo de documento → recibo de honorarios (CFDI 4.0)',
+        'extrayendo 10 campos',
+        'validando RFC del emisor · 13 caracteres · persona física',
+        'cuadrando importes: subtotal + IVA − retenciones = total',
+        { t:'RFC del emisor no pasa el dígito verificador → revisión humana', c:'rev' }
+      ],
+      campos: [
+        { k:'tipo', r:null, label:'Tipo de documento', val:'Recibo de honorarios · CFDI 4.0', conf:98 },
+        { k:'rfc_emisor', r:'h-rfc-emisor', label:'RFC del emisor', conf:41, review:'rfc' },
+        { k:'emisor', r:'h-emisor', label:'Emisor', val:'María Fernanda Solís Trejo',
+          raw:'MARÍA FERNANDA SOLÍS TREJO', conf:97, note:'Persona física · régimen 612.' },
+        { k:'rfc_receptor', r:'h-rfc-receptor', label:'RFC del receptor', val:'CVE180322T47', conf:99, rfc:true },
+        { k:'fecha', r:'h-fecha', label:'Fecha de emisión', val:'2026-03-18', raw:'18/03/2026', conf:98 },
+        { k:'subtotal', r:'h-subtotal', label:'Subtotal', val:'18,500.00 MXN', conf:99 },
+        { k:'iva', r:'h-iva', label:'IVA trasladado (16%)', val:'2,960.00 MXN', conf:99,
+          note:'18,500.00 × 0.16 = 2,960.00. <span class="yes">Cuadra</span>.' },
+        { k:'isr', r:'h-isr', label:'Retención de ISR (10%)', val:'−1,850.00 MXN', conf:98,
+          note:'18,500.00 × 0.10 = 1,850.00. <span class="yes">Cuadra</span>.' },
+        { k:'riva', r:'h-riva', label:'Retención de IVA (10.6667%)', val:'−1,973.33 MXN', conf:97,
+          note:'Dos terceras partes del IVA: 2,960.00 × 2/3 = 1,973.33. <span class="yes">Cuadra</span>.' },
+        { k:'total', r:'h-total', label:'Total a pagar', val:'17,636.67 MXN', conf:99,
+          note:'18,500.00 + 2,960.00 − 1,850.00 − 1,973.33 = 17,636.67. <span class="yes">Cuadra</span>.' }
+      ]
+    }
+  };
+
+  /* ══════════ Estado ═══════════════════════════════════════════════ */
+
+  var actual = 'factura';
+  var token = 0;
+  var pendiente = false;    // hay un campo en revisión sin resolver
+  var resuelto = null;      // { campo, valor, via }
+  var devuelto = false;     // el documento se devolvió al proveedor
+  var reloj = 0;
+
+  var elLog = $('log'), elFields = $('fields'), elRun = $('run');
+  var elLoadBtn = $('load-btn'), elLoadStatus = $('load-status'), elReceipt = $('receipt');
+
+  function espera(ms){
+    return new Promise(function(res){ setTimeout(res, REDUCE ? 0 : ms); });
+  }
+
+  function hora(){
+    // Reloj del escenario: arranca a las 09:12:04 y avanza unos segundos.
+    var base = 9 * 3600 + 12 * 60 + 4 + reloj;
+    var h = Math.floor(base / 3600) % 24, m = Math.floor(base / 60) % 60, s = base % 60;
+    var p = function(n){ return (n < 10 ? '0' : '') + n; };
+    return p(h) + ':' + p(m) + ':' + p(s);
+  }
+
+  function log(texto, clase){
+    var d = document.createElement('div');
+    var t = document.createElement('span');
+    t.className = 't'; t.textContent = hora();
+    var b = document.createElement('span');
+    if (clase) b.className = clase;
+    b.textContent = texto;
+    d.appendChild(t); d.appendChild(b);
+    elLog.appendChild(d);
+    elLog.scrollTop = elLog.scrollHeight;
+  }
+
+  function limpiarLog(){ elLog.textContent = ''; reloj = 0; }
+
+  /* ── Resaltado documento ↔ ficha ─────────────────────────────── */
+
+  function marcar(regionId, encendido, esRevision){
+    if (!regionId) return;
+    var el = $(regionId);
+    if (!el) return;
+    var clase = esRevision ? 'hl-rev' : 'hl';
+    if (encendido){
+      el.classList.add(clase);
+      // El documento vive en su propia caja con scroll: se mueve esa caja, no
+      // la página, para que el cursor no se salga del campo que estás mirando.
+      var cont = document.querySelector('.docwrap');
+      if (!cont || window.innerWidth <= 980) return;
+      var cr = cont.getBoundingClientRect(), r = el.getBoundingClientRect();
+      if (r.top < cr.top + 10 || r.bottom > cr.bottom - 10){
+        cont.scrollTop += (r.top - cr.top) - (cont.clientHeight / 2 - r.height / 2);
+      }
+    } else {
+      el.classList.remove(clase);
+    }
+  }
+
+  /* ── Pintar un campo ─────────────────────────────────────────── */
+
+  function nodoCampo(campo){
+    var f = document.createElement('div');
+    f.className = 'f appear' + (campo.review ? ' review' : '');
+    f.setAttribute('tabindex', '0');
+    f.setAttribute('data-key', campo.k);
+
+    var enRevision = !!campo.review;
+
+    var top = document.createElement('div');
+    top.className = 'f-top';
+    var lab = document.createElement('span');
+    lab.className = 'f-label';
+    lab.textContent = campo.label;
+    if (enRevision){
+      var bg = document.createElement('span');
+      bg.className = 'badge rev';
+      bg.textContent = 'revisión humana';
+      lab.appendChild(bg);
+    }
+    var conf = document.createElement('span');
+    conf.className = 'f-conf mono';
+    conf.textContent = 'confianza ' + campo.conf + '%';
+    top.appendChild(lab); top.appendChild(conf);
+    f.appendChild(top);
+
+    var val = document.createElement('div');
+    val.className = 'f-val' + (campo.rfc || campo.review ? ' mono' : '');
+    val.textContent = enRevision ? '—' : campo.val;
+    f.appendChild(val);
+
+    if (campo.raw){
+      var raw = document.createElement('div');
+      raw.className = 'f-raw';
+      raw.innerHTML = 'en el documento: <b>' + campo.raw + '</b>';
+      f.appendChild(raw);
+    }
+
+    if (campo.rfc){
+      var v = validarRFC(campo.val);
+      var n = document.createElement('div');
+      n.className = 'f-note';
+      n.innerHTML = v.tipo + ' · estructura y fecha correctas · dígito verificador «' +
+        campo.val.charAt(campo.val.length - 1) + '» <span class="yes">correcto</span>';
+      f.appendChild(n);
+    } else if (campo.note){
+      var n2 = document.createElement('div');
+      n2.className = 'f-note';
+      n2.innerHTML = campo.note;
+      f.appendChild(n2);
+    }
+
+    var bc = document.createElement('div');
+    bc.className = 'bar-c';
+    var bi = document.createElement('i');
+    bi.style.width = campo.conf + '%';
+    bc.appendChild(bi);
+    f.appendChild(bc);
+
+    if (enRevision) f.appendChild(tarjetaRevision(campo, f, val));
+
+    var enc = function(){ marcar(campo.r, true, enRevision); };
+    var apa = function(){ marcar(campo.r, false, enRevision); };
+    f.addEventListener('mouseenter', enc);
+    f.addEventListener('mouseleave', apa);
+    f.addEventListener('focus', enc);
+    f.addEventListener('blur', apa);
+    f.addEventListener('click', function(ev){
+      if (ev.target.closest('button, input')) return;
+      // En celular no hay «salir del campo»: se apaga lo anterior a mano.
+      Array.prototype.forEach.call(document.querySelectorAll('.hl, .hl-rev'), function(e){
+        e.classList.remove('hl'); e.classList.remove('hl-rev');
+      });
+      enc();
+    });
+
+    return f;
+  }
+
+  /* ── Las dos tarjetas de revisión ────────────────────────────── */
+
+  function tarjetaRevision(campo, nodoF, nodoVal){
+    var c = document.createElement('div');
+    c.className = 'rev-card';
+
+    function cerrar(valor, via, textoEstado){
+      pendiente = false;
+      resuelto = { campo: campo.label, valor: valor, via: via };
+      nodoVal.textContent = valor;
+      nodoF.classList.remove('review');
+      var badge = nodoF.querySelector('.badge');
+      if (badge){ badge.className = 'badge human'; badge.textContent = 'confirmado por una persona'; }
+      var conf = nodoF.querySelector('.f-conf');
+      if (conf) conf.textContent = 'confirmado a mano';
+      var barra = nodoF.querySelector('.bar-c i');
+      if (barra){ barra.style.width = '100%'; barra.style.background = 'var(--accent-soft)'; }
+      c.innerHTML = '';
+      var p = document.createElement('p');
+      p.style.margin = '0';
+      p.innerHTML = textoEstado;
+      c.appendChild(p);
+      c.style.borderColor = 'rgba(15,104,98,.3)';
+      c.style.background = 'var(--accent-wash)';
+      marcar(campo.r, false, true);
+      log('campo resuelto por una persona: ' + campo.label.toLowerCase(), 'ok');
+      actualizarCarga();
+    }
+
+    if (campo.review === 'oc'){
+      c.innerHTML =
+        '<h4>Orden de compra — no se lee</h4>' +
+        '<div class="crop"><span class="zoom">OC-447<i class="smudge">1</i></span>' +
+        '<span class="cap">recorte de la anotación de recepción · 200 dpi</span></div>' +
+        '<p>Está escrita a mano y el escaneo se comió el último dígito: puede ser un ' +
+        '<strong>1</strong> o un <strong>7</strong>. Con 54% de confianza el agente no elige. ' +
+        'En compras, cargar la orden equivocada manda el pago a otro proyecto.</p>';
+      var opts = document.createElement('div');
+      opts.className = 'opts';
+      [['OC-4471','elegida de dos candidatas'], ['OC-4477','elegida de dos candidatas']].forEach(function(o){
+        var b = document.createElement('button');
+        b.className = 'opt';
+        b.textContent = o[0];
+        b.addEventListener('click', function(){
+          cerrar(o[0], o[1], 'Confirmado: <strong>' + o[0] + '</strong>. El agente guarda quién lo confirmó y a qué hora, junto al recorte del documento.');
+        });
+        opts.appendChild(b);
+      });
+      var b3 = document.createElement('button');
+      b3.className = 'opt sec';
+      b3.textContent = 'Dejar vacío y avisar a compras';
+      b3.addEventListener('click', function(){
+        cerrar('(vacío · pendiente con compras)', 'dejado en blanco a propósito',
+          'Se carga el registro sin orden de compra y queda marcado para compras. Vacío a propósito es distinto de vacío por descuido: el agente deja la nota.');
+      });
+      opts.appendChild(b3);
+      c.appendChild(opts);
+      return c;
+    }
+
+    // Revisión por RFC que no pasa la validación
+    var impreso = 'SOTM890417HZ2';
+    var v = validarRFC(impreso);
+    var html =
+      '<h4>RFC del emisor — no pasa la validación</h4>' +
+      '<p>El documento dice <strong class="mono">' + impreso + '</strong>. Se lee perfecto: ' +
+      'el problema no es el escaneo, es que el RFC no cuadra consigo mismo.</p><ul class="checks">';
+    v.reglas.forEach(function(r){
+      var mark = r.estado === 'yes' ? '<span class="yes">✓</span>' :
+                 (r.estado === 'no' ? '<span class="no">✗</span>' : '<span class="dim">·</span>');
+      html += '<li>' + mark + '<span>' + r.texto + '</span></li>';
+    });
+    html += '</ul><p>Cambiar el último carácter por el que sí cuadra sería inventar un ' +
+      'contribuyente. Puede estar mal la homoclave, una letra del apellido o la fecha. ' +
+      'Quien tiene el recibo en la mano lo resuelve en veinte segundos; el agente, no.</p>';
+    c.innerHTML = html;
+
+    var fila = document.createElement('div');
+    fila.className = 'rfc-in';
+    var inp = document.createElement('input');
+    inp.type = 'text'; inp.maxLength = 20; inp.placeholder = 'RFC correcto';
+    inp.setAttribute('aria-label', 'RFC corregido por una persona');
+    inp.autocomplete = 'off'; inp.spellcheck = false;
+    var btn = document.createElement('button');
+    btn.className = 'go ghost'; btn.textContent = 'Validar y confirmar';
+    fila.appendChild(inp); fila.appendChild(btn);
+    c.appendChild(fila);
+
+    var salida = document.createElement('ul');
+    salida.className = 'rules';
+    c.appendChild(salida);
+
+    function intentar(){
+      var res = validarRFC(inp.value);
+      pintarReglas(salida, res);
+      if (res.ok){
+        cerrar(res.rfc, 'corregido y validado por una persona',
+          'Confirmado: <strong class="mono">' + res.rfc + '</strong>. Pasa estructura, fecha y dígito verificador. ' +
+          'Queda registrado que lo corrigió una persona, no el agente.');
+      }
+    }
+    btn.addEventListener('click', intentar);
+    inp.addEventListener('keydown', function(e){ if (e.key === 'Enter'){ e.preventDefault(); intentar(); } });
+
+    var devolver = document.createElement('button');
+    devolver.className = 'opt sec';
+    devolver.style.marginTop = '4px';
+    devolver.textContent = 'Devolver el recibo al proveedor';
+    devolver.addEventListener('click', function(){
+      devuelto = true;
+      cerrar('(devuelto al proveedor)', 'documento rechazado',
+        'El recibo se devuelve y <strong>no se carga nada</strong>. Un registro menos es más barato ' +
+        'que un proveedor mal dado de alta que aparece dos veces en el padrón.');
+    });
+    c.appendChild(devolver);
+
+    return c;
+  }
+
+  function pintarReglas(ul, res){
+    ul.innerHTML = '';
+    res.reglas.forEach(function(r){
+      var li = document.createElement('li');
+      var m = document.createElement('span');
+      m.className = r.estado === 'yes' ? 'yes' : (r.estado === 'no' ? 'no' : 'dim');
+      m.textContent = r.estado === 'yes' ? '✓' : (r.estado === 'no' ? '✗' : '·');
+      var t = document.createElement('span');
+      t.textContent = r.texto;
+      li.appendChild(m); li.appendChild(t);
+      ul.appendChild(li);
+    });
+  }
+
+  /* ── Carga al sistema ────────────────────────────────────────── */
+
+  function actualizarCarga(){
+    var d = DOCS[actual];
+    var total = d.campos.length;
+    if (pendiente){
+      elLoadStatus.innerHTML = (total - 1) + ' de ' + total + ' campos listos. <strong>1 campo detenido</strong>: el registro no se carga incompleto.';
+      elLoadBtn.disabled = true;
+      elLoadBtn.textContent = 'Cargar al sistema';
+      return;
+    }
+    if (devuelto){
+      elLoadStatus.innerHTML = 'Documento devuelto al proveedor. <strong>No se cargó nada.</strong>';
+      elLoadBtn.disabled = true;
+      elLoadBtn.textContent = 'Nada que cargar';
+      return;
+    }
+    elLoadStatus.innerHTML = total + ' de ' + total + ' campos listos' +
+      (resuelto ? ' (' + (total - 1) + ' automáticos, 1 confirmado por una persona).' : '.');
+    elLoadBtn.disabled = false;
+    elLoadBtn.textContent = 'Cargar al sistema';
+  }
+
+  elLoadBtn.addEventListener('click', function(){
+    var d = DOCS[actual];
+    var total = d.campos.length;
+    reloj += 3;
+    log('escribiendo registro en el sistema destino', 'ok');
+    var lineas = [
+      'registro cargado          simulado',
+      'sistema destino           ' + d.destino,
+      'folio interno             ' + d.folioInterno,
+      'documento                 ' + d.archivo,
+      'campos                    ' + total + (resuelto ? '  (' + (total - 1) + ' del agente, 1 de una persona)' : ''),
+      'campo confirmado a mano   ' + (resuelto ? resuelto.campo + ' → ' + resuelto.valor : '—'),
+      'confirmó                  ' + (resuelto ? 'Joel M. · ' + hora() : '—'),
+      'evidencia                 recorte del documento guardado junto al registro'
+    ];
+    elReceipt.textContent = lineas.join('\n') + '\n\nNada de esto salió de tu navegador. Es una demo con datos inventados.';
+    elReceipt.hidden = false;
+    elLoadBtn.disabled = true;
+    elLoadBtn.textContent = 'Cargado';
+    elLoadStatus.innerHTML = 'Cargado. El renglón que alguien capturaba a mano ya está en el sistema.';
+  });
+
+  /* ── El recorrido ────────────────────────────────────────────── */
+
+  function reiniciar(){
+    token++;
+    pendiente = false; resuelto = null; devuelto = false;
+    elFields.textContent = '';
+    elReceipt.hidden = true; elReceipt.textContent = '';
+    elLoadBtn.disabled = true; elLoadBtn.textContent = 'Cargar al sistema';
+    elLoadStatus.textContent = 'Sin procesar.';
+    limpiarLog();
+    document.querySelectorAll('.rg.hl, .rg.hl-rev, .hand.hl-rev').forEach(function(e){
+      e.classList.remove('hl'); e.classList.remove('hl-rev');
+    });
+  }
+
+  function procesar(){
+    var t = ++token;
+    var d = DOCS[actual];
+    pendiente = false; resuelto = null; devuelto = false;
+    elFields.textContent = '';
+    elReceipt.hidden = true; elReceipt.textContent = '';
+    elLoadBtn.disabled = true;
+    elLoadStatus.textContent = 'Procesando…';
+    limpiarLog();
+    elRun.disabled = true;
+    elRun.textContent = 'Procesando…';
+
+    var cadena = Promise.resolve();
+
+    d.pasos.forEach(function(p){
+      cadena = cadena.then(function(){
+        if (t !== token) return;
+        return espera(330).then(function(){
+          if (t !== token) return;
+          reloj += 1;
+          if (typeof p === 'string') log(p);
+          else log(p.t, p.c);
+        });
+      });
+    });
+
+    d.campos.forEach(function(campo){
+      cadena = cadena.then(function(){
+        if (t !== token) return;
+        return espera(190).then(function(){
+          if (t !== token) return;
+          if (campo.review) pendiente = true;
+          elFields.appendChild(nodoCampo(campo));
+        });
+      });
+    });
+
+    cadena.then(function(){
+      if (t !== token) return;
+      reloj += 1;
+      var total = d.campos.length;
+      log(total + ' campos extraídos · ' + (total - 1) + ' listos · 1 en revisión', 'rev');
+      elRun.disabled = false;
+      elRun.textContent = 'Procesar de nuevo';
+      actualizarCarga();
+    });
+  }
+
+  elRun.addEventListener('click', procesar);
+
+  /* ── Cambio de documento ─────────────────────────────────────── */
+
+  $('tabs').addEventListener('click', function(ev){
+    var b = ev.target.closest('.tab');
+    if (!b) return;
+    var id = b.getAttribute('data-doc');
+    if (id === actual) return;
+    actual = id;
+    Array.prototype.forEach.call(this.querySelectorAll('.tab'), function(x){
+      x.setAttribute('aria-pressed', x === b ? 'true' : 'false');
+    });
+    var d = DOCS[id];
+    $('scan-name').textContent = d.archivo;
+    $('scan-meta').textContent = d.meta;
+    $('sheet-factura').hidden = (id !== 'factura');
+    $('sheet-honorarios').hidden = (id !== 'honorarios');
+    reiniciar();
+    elRun.disabled = false;
+    elRun.textContent = 'Procesar documento';
+    log('documento en espera: ' + d.archivo);
+  });
+
+  /* ── Resaltado desde el documento hacia la ficha ─────────────── */
+
+  document.addEventListener('mouseover', function(ev){
+    if (!ev.target || !ev.target.closest) return;
+    var rg = ev.target.closest('.rg, .hand');
+    if (!rg || !rg.id) return;
+    var campos = DOCS[actual].campos;
+    for (var i = 0; i < campos.length; i++){
+      if (campos[i].r === rg.id){
+        var nodo = elFields.querySelector('[data-key="' + campos[i].k + '"]');
+        if (nodo){
+          rg.classList.add(campos[i].review ? 'hl-rev' : 'hl');
+          nodo.style.background = campos[i].review ? 'var(--review-wash)' : 'var(--accent-wash)';
+        }
+        break;
+      }
+    }
+  });
+  document.addEventListener('mouseout', function(ev){
+    if (!ev.target || !ev.target.closest) return;
+    var rg = ev.target.closest('.rg, .hand');
+    if (!rg || !rg.id) return;
+    rg.classList.remove('hl'); rg.classList.remove('hl-rev');
+    Array.prototype.forEach.call(elFields.querySelectorAll('.f'), function(n){ n.style.background = ''; });
+  });
+
+  /* ── Validador suelto ────────────────────────────────────────── */
+
+  var salidaRFC = $('rfc-out'), entradaRFC = $('rfc-input');
+  function validarSuelto(){
+    pintarReglas(salidaRFC, validarRFC(entradaRFC.value));
+  }
+  $('rfc-btn').addEventListener('click', validarSuelto);
+  entradaRFC.addEventListener('keydown', function(e){
+    if (e.key === 'Enter'){ e.preventDefault(); validarSuelto(); }
+  });
+  $('chips').addEventListener('click', function(ev){
+    var c = ev.target.closest('.chip');
+    if (!c) return;
+    entradaRFC.value = c.getAttribute('data-rfc');
+    validarSuelto();
+  });
+
+})();
+</script>
+</body>
+</html>

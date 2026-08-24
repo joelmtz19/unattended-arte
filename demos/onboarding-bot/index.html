@@ -1,0 +1,1269 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta name="robots" content="noindex, nofollow">
+<meta name="googlebot" content="noindex, nofollow">
+
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Onboarding Bot — demo · unattended.io</title>
+<meta name="description" content="Demo con datos de ejemplo: una conversación que llena un expediente en vivo y valida el RFC de verdad.">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+
+<style>
+/* ══════════════════════════════════════════════════════════════════
+   Onboarding Bot — demo de producto (unattended.io)
+   Un solo archivo, sin dependencias. Paleta y tipografía tomadas de
+   unattended-site/src/app/globals.css. Ver README.md de esta carpeta.
+   ══════════════════════════════════════════════════════════════════ */
+
+:root{
+  --bg:#fbfbfd;
+  --panel:#ffffff;
+  --ink:#1d1d1f;
+  --muted:#57575c;
+  --faint:#6e6e73;
+  --line:rgba(29,29,31,.11);
+  --line-soft:rgba(29,29,31,.06);
+  --accent:#0f6862;
+  --accent-soft:#7ad0c6;
+  --field:#101013;
+  --mal:#a3241d;
+  --mal-bg:rgba(163,36,29,.07);
+  --espera:#8a6410;
+  --espera-bg:rgba(138,100,16,.09);
+  --sans:'Archivo','Segoe UI',system-ui,-apple-system,Helvetica,Arial,sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,SFMono-Regular,Consolas,'Courier New',monospace;
+}
+
+*{ box-sizing:border-box }
+html{ -webkit-text-size-adjust:100% }
+
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--ink);
+  font-family:var(--sans);
+  font-size:16px;
+  line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+
+button{ font-family:inherit; font-size:inherit; color:inherit }
+
+.mono{ font-family:var(--mono) }
+
+/* ── Franja de aviso ─────────────────────────────────────────────── */
+
+.banda{
+  position:sticky; top:0; z-index:40;
+  background:var(--field);
+  color:rgba(245,245,247,.72);
+  font-family:var(--mono);
+  font-size:11.5px;
+  letter-spacing:.015em;
+  padding:9px 20px;
+}
+.banda .env{ max-width:1180px; margin:0 auto }
+.banda b{ color:var(--accent-soft); font-weight:600 }
+
+/* ── Cabecera ────────────────────────────────────────────────────── */
+
+.cab{
+  max-width:1180px; margin:0 auto;
+  padding:22px 20px 16px;
+  display:flex; align-items:flex-start; justify-content:space-between; gap:20px;
+}
+.marca{
+  font-size:16px; font-weight:700; letter-spacing:-.04em;
+  margin:0 0 11px;
+}
+.marca i{ font-style:normal; color:var(--accent) }
+.eyebrow{
+  display:block;
+  font-family:var(--mono);
+  font-size:10.5px; letter-spacing:.16em; text-transform:uppercase;
+  color:var(--faint);
+  margin:0 0 8px;
+}
+h1{
+  margin:0 0 10px;
+  font-size:31px; font-weight:700; line-height:1.08; letter-spacing:-.04em;
+}
+.cab p{ margin:0; color:var(--muted); max-width:56ch; font-size:15px }
+.reiniciar{
+  flex:none;
+  background:none; border:1px solid var(--line); border-radius:9px;
+  font-family:var(--mono); font-size:11.5px; letter-spacing:.04em;
+  color:var(--muted);
+  padding:8px 12px; cursor:pointer;
+  transition:border-color .15s, color .15s;
+}
+.reiniciar:hover{ border-color:var(--accent); color:var(--accent) }
+
+/* ── Escena ──────────────────────────────────────────────────────── */
+
+.escena{
+  max-width:1180px; margin:0 auto;
+  padding:8px 20px 44px;
+  display:grid;
+  grid-template-columns:minmax(0,1.02fr) minmax(0,.98fr);
+  gap:22px;
+  align-items:start;
+}
+.col > .eyebrow{ margin-left:2px }
+
+/* ── Chat ────────────────────────────────────────────────────────── */
+
+.chat{
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:14px;
+  overflow:hidden;
+  box-shadow:0 1px 2px rgba(29,29,31,.04);
+}
+.canal{
+  background:var(--field);
+  color:rgba(245,245,247,.7);
+  font-family:var(--mono); font-size:11px; letter-spacing:.03em;
+  padding:10px 14px;
+  display:flex; align-items:center; gap:8px;
+}
+.punto{ width:7px; height:7px; border-radius:50%; background:var(--accent-soft); flex:none }
+
+.hilo{
+  padding:16px 14px 6px;
+  background:#f4f4f6;
+  height:min(56vh,520px);
+  overflow-y:auto;
+  overscroll-behavior:contain;
+}
+.msg{
+  max-width:84%;
+  padding:9px 12px 7px;
+  border-radius:13px;
+  font-size:14.5px; line-height:1.45;
+  margin:0 0 10px;
+  animation:entra .22s ease-out;
+}
+@keyframes entra{ from{ opacity:0; transform:translateY(5px) } to{ opacity:1; transform:none } }
+
+.msg.agente{
+  background:var(--field); color:#f0f0f2;
+  border-bottom-left-radius:4px;
+}
+.msg.cliente{
+  margin-left:auto;
+  background:var(--panel); border:1px solid var(--line);
+  border-bottom-right-radius:4px;
+}
+.msg .quien{
+  display:block;
+  font-family:var(--mono); font-size:9.5px; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--accent-soft);
+  margin:0 0 4px;
+}
+.msg .hora{
+  display:block;
+  font-family:var(--mono); font-size:10px;
+  opacity:.5;
+  text-align:right;
+  margin-top:5px;
+}
+.msg strong{ font-weight:600 }
+.msg.agente strong{ color:#fff }
+
+.sistema{
+  text-align:center;
+  font-family:var(--mono); font-size:10.5px; letter-spacing:.08em; text-transform:uppercase;
+  color:var(--faint);
+  margin:6px 0 14px;
+  padding:0 10px;
+}
+.sistema span{ background:#f4f4f6; padding:0 8px }
+.sistema{ position:relative }
+.sistema::before{
+  content:''; position:absolute; left:0; right:0; top:50%; height:1px;
+  background:var(--line-soft); z-index:0;
+}
+.sistema span{ position:relative; z-index:1 }
+
+.adjunto{
+  display:flex; align-items:center; gap:9px;
+  font-family:var(--mono); font-size:12px;
+  word-break:break-all;
+}
+.adjunto svg{ flex:none; color:var(--accent) }
+
+.rechazo{
+  max-width:84%; margin:-4px 0 12px auto;
+  font-family:var(--mono); font-size:10.5px; letter-spacing:.03em;
+  color:var(--mal);
+  text-align:right;
+}
+
+.escribiendo{
+  display:inline-flex; gap:4px; align-items:center;
+  background:var(--field); border-radius:13px; border-bottom-left-radius:4px;
+  padding:12px 14px; margin:0 0 10px;
+}
+.escribiendo i{
+  width:6px; height:6px; border-radius:50%; background:rgba(245,245,247,.55);
+  animation:pulso 1.1s infinite ease-in-out;
+}
+.escribiendo i:nth-child(2){ animation-delay:.15s }
+.escribiendo i:nth-child(3){ animation-delay:.3s }
+@keyframes pulso{ 0%,60%,100%{ opacity:.3 } 30%{ opacity:1 } }
+
+/* ── Zona de control ─────────────────────────────────────────────── */
+
+.control{
+  border-top:1px solid var(--line);
+  background:var(--panel);
+  padding:14px;
+}
+.pista{
+  display:block;
+  font-family:var(--mono); font-size:10px; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--faint);
+  margin:0 0 10px;
+}
+.chip{
+  display:block; width:100%; text-align:left;
+  background:var(--panel);
+  border:1px solid rgba(15,104,98,.32);
+  border-radius:12px; border-bottom-right-radius:4px;
+  padding:10px 12px;
+  font-size:14.5px; line-height:1.4;
+  cursor:pointer;
+  margin:0 0 8px;
+  transition:border-color .15s, background .15s;
+}
+.chip:hover{ border-color:var(--accent); background:rgba(15,104,98,.05) }
+.chip:last-child{ margin-bottom:0 }
+.chip .marca-chip{
+  display:block;
+  font-family:var(--mono); font-size:10px; letter-spacing:.1em; text-transform:uppercase;
+  color:var(--faint); margin-top:5px;
+}
+.chip[disabled]{ opacity:.45; cursor:not-allowed; border-style:dashed }
+
+.principal{
+  background:var(--accent); color:#fff; border:none;
+  border-radius:10px;
+  font-family:var(--mono); font-size:12.5px; letter-spacing:.04em;
+  padding:12px 16px; cursor:pointer;
+  transition:background .15s;
+}
+.principal:hover{ background:#0c534e }
+.secundario{
+  background:none; border:1px solid var(--line);
+  border-radius:10px;
+  font-family:var(--mono); font-size:12px; letter-spacing:.03em;
+  color:var(--muted);
+  padding:11px 14px; cursor:pointer; margin-left:8px;
+  transition:border-color .15s, color .15s;
+}
+.secundario:hover{ border-color:var(--accent); color:var(--accent) }
+
+.forma{ display:flex; gap:8px; margin:0 0 10px }
+.forma input{
+  flex:1; min-width:0;
+  font-family:var(--mono); font-size:15px; letter-spacing:.08em;
+  text-transform:uppercase;
+  padding:11px 12px;
+  border:1px solid var(--line); border-radius:10px;
+  background:var(--panel); color:var(--ink);
+}
+.forma input:focus{ outline:2px solid rgba(15,104,98,.35); outline-offset:1px; border-color:var(--accent) }
+.forma button{
+  flex:none;
+  background:var(--accent); color:#fff; border:none; border-radius:10px;
+  font-family:var(--mono); font-size:12.5px; letter-spacing:.03em;
+  padding:0 16px; cursor:pointer;
+}
+.forma button:hover{ background:#0c534e }
+
+.muestras{ display:flex; flex-wrap:wrap; gap:6px }
+.muestra{
+  background:rgba(15,104,98,.06);
+  border:1px solid rgba(15,104,98,.2);
+  border-radius:8px;
+  padding:6px 9px;
+  font-family:var(--mono); font-size:11px; letter-spacing:.02em;
+  color:var(--accent);
+  cursor:pointer; text-align:left;
+  transition:background .15s;
+}
+.muestra:hover{ background:rgba(15,104,98,.13) }
+.muestra em{ display:block; font-style:normal; color:var(--faint); font-size:10px; letter-spacing:.04em; margin-top:2px }
+
+.aclara{
+  margin:12px 0 0;
+  font-size:12.5px; line-height:1.5; color:var(--muted);
+  border-left:2px solid var(--accent);
+  padding:2px 0 2px 10px;
+}
+
+/* ── Expediente ──────────────────────────────────────────────────── */
+
+.ficha{
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:14px;
+  overflow:hidden;
+  box-shadow:0 1px 2px rgba(29,29,31,.04);
+  scroll-margin-top:74px;
+}
+.ficha-cab{
+  padding:13px 14px;
+  border-bottom:1px solid var(--line);
+  display:flex; align-items:center; justify-content:space-between; gap:10px;
+}
+.ficha-cab h2{ margin:0; font-size:15px; font-weight:600; letter-spacing:-.02em }
+.ficha-cab .sub{
+  display:block;
+  font-family:var(--mono); font-size:10.5px; color:var(--faint); letter-spacing:.03em;
+  margin-top:3px;
+}
+.estado{
+  flex:none;
+  font-family:var(--mono); font-size:10px; letter-spacing:.1em; text-transform:uppercase;
+  padding:5px 9px; border-radius:20px;
+  background:rgba(29,29,31,.05); color:var(--faint);
+  white-space:nowrap;
+}
+.estado.espera{ background:var(--espera-bg); color:var(--espera) }
+.estado.listo{ background:rgba(15,104,98,.1); color:var(--accent) }
+
+.campo{
+  display:grid;
+  grid-template-columns:118px minmax(0,1fr);
+  gap:0 12px;
+  align-items:baseline;
+  padding:8px 14px;
+  border-bottom:1px solid var(--line-soft);
+  border-left:2px solid transparent;
+}
+.campo .etq{
+  font-family:var(--mono); font-size:9.5px; letter-spacing:.1em; text-transform:uppercase;
+  color:var(--faint);
+  line-height:1.5;
+}
+.campo .val{ font-size:14px; line-height:1.35; color:var(--ink); word-wrap:break-word }
+.campo .fuente, .campo .nota-mal{ grid-column:2 }
+.campo .val.vacio{ color:#a4a4a9; font-family:var(--mono); font-size:12.5px; letter-spacing:.03em }
+.campo.lleno{ border-left-color:var(--accent); background:linear-gradient(90deg,rgba(15,104,98,.045),transparent 62%) }
+.campo.flash{ animation:flash .9s ease-out }
+@keyframes flash{ 0%{ background:rgba(122,208,198,.45) } 100%{ background:transparent } }
+.campo .fuente{
+  display:block;
+  font-family:var(--mono); font-size:9.5px; letter-spacing:.06em;
+  color:var(--accent);
+  margin-top:3px;
+}
+.campo .nota-mal{
+  display:block;
+  font-family:var(--mono); font-size:10.5px; letter-spacing:.02em;
+  color:var(--mal);
+  margin-top:3px;
+}
+.campo.malo{ border-left-color:var(--mal); background:var(--mal-bg) }
+.campo .val.mono{ font-family:var(--mono); font-size:14px; letter-spacing:.06em }
+
+.doc{
+  margin:12px 14px 14px;
+  border:1px dashed var(--line);
+  border-radius:11px;
+  padding:11px 12px;
+  background:rgba(29,29,31,.015);
+}
+.doc.espera{ border-color:rgba(138,100,16,.4); background:var(--espera-bg) }
+.doc.ok{ border-style:solid; border-color:rgba(15,104,98,.35); background:rgba(15,104,98,.05) }
+.doc .etq{
+  display:block;
+  font-family:var(--mono); font-size:10px; letter-spacing:.11em; text-transform:uppercase;
+  color:var(--faint); margin-bottom:4px;
+}
+.doc .val{ font-size:13.5px; color:var(--muted) }
+.doc .val b{ color:var(--ink); font-weight:600 }
+.doc .recordatorio{
+  display:block; margin-top:6px;
+  font-family:var(--mono); font-size:10.5px; color:var(--espera); letter-spacing:.02em;
+}
+
+.crm{
+  margin:0; padding:14px;
+  background:var(--field);
+  color:#f0f0f2;
+}
+.crm .etq{
+  display:block;
+  font-family:var(--mono); font-size:10px; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--accent-soft);
+  margin-bottom:9px;
+}
+.crm table{ width:100%; border-collapse:collapse; font-family:var(--mono); font-size:11.5px }
+.crm td{ padding:3px 0; vertical-align:top; word-break:break-word }
+.crm td:first-child{ color:rgba(240,240,242,.5); width:36%; padding-right:10px; white-space:nowrap }
+.crm td b{ font-weight:500 }
+.crm .ok{ color:var(--accent-soft) }
+.crm .pend{ color:#e0b64a }
+.crm .cierre{
+  margin:11px 0 0; padding-top:11px;
+  border-top:1px solid rgba(240,240,242,.14);
+  font-family:var(--sans); font-size:13px; line-height:1.5;
+  color:rgba(240,240,242,.8);
+}
+.crm .cierre b{ color:#fff; font-weight:600 }
+.crm .cierre .sim{
+  display:block; margin-top:6px;
+  font-family:var(--mono); font-size:10px; letter-spacing:.06em;
+  color:rgba(240,240,242,.45);
+}
+
+/* ── Pie ─────────────────────────────────────────────────────────── */
+
+.pie{
+  max-width:1180px; margin:0 auto;
+  padding:0 20px 46px;
+}
+.pie div{
+  border-top:1px solid var(--line);
+  padding-top:14px;
+  font-family:var(--mono); font-size:11px; line-height:1.7; color:var(--faint);
+  letter-spacing:.02em;
+}
+
+/* ── Barra de celular ────────────────────────────────────────────── */
+
+.barra-movil{
+  display:none;
+  position:fixed; left:0; right:0; bottom:0; z-index:30;
+  background:var(--field); color:rgba(245,245,247,.85);
+  padding:10px 16px;
+  align-items:center; justify-content:space-between; gap:10px;
+  font-family:var(--mono); font-size:11.5px; letter-spacing:.03em;
+}
+.barra-movil b{ color:var(--accent-soft); font-weight:600 }
+.barra-movil button{
+  background:none; border:1px solid rgba(245,245,247,.3); border-radius:7px;
+  color:rgba(245,245,247,.85);
+  font-family:var(--mono); font-size:11px;
+  padding:6px 10px; cursor:pointer;
+}
+
+/* ── Angosto ─────────────────────────────────────────────────────── */
+
+@media (max-width:560px){
+  .campo{ grid-template-columns:1fr; gap:2px }
+  .campo .fuente, .campo .nota-mal{ grid-column:1 }
+}
+
+@media (max-width:900px){
+  .escena{ grid-template-columns:1fr; gap:26px }
+  .barra-movil{ display:flex }
+  body{ padding-bottom:52px }
+  .cab{ flex-direction:column; gap:14px; padding-top:20px }
+  .hilo{ height:min(48vh,400px) }
+}
+
+@media (max-width:430px){
+  body{ font-size:15px }
+  .banda{ font-size:11px; padding:9px 14px }
+  .cab{ padding:18px 14px 14px }
+  h1{ font-size:24px }
+  .cab p{ font-size:14px }
+  .escena{ padding:6px 14px 34px }
+  .pie{ padding:0 14px 40px }
+  .hilo{ height:min(44vh,360px) }
+  .msg{ max-width:90%; font-size:14px }
+  .chip{ font-size:14px }
+  .forma{ flex-wrap:wrap }
+  .forma input{ flex:1 1 100% }
+  .forma button{ flex:1 1 100%; padding:11px 16px }
+  .muestra{ flex:1 1 100% }
+  .campo .val{ font-size:14px }
+}
+
+@media (prefers-reduced-motion:reduce){
+  *{ animation:none !important; transition:none !important; scroll-behavior:auto !important }
+}
+</style>
+</head>
+<body>
+
+<div class="banda">
+  <div class="env"><b>Demo · datos de ejemplo.</b> Así se ve el agente trabajando. Los datos son simulados.</div>
+</div>
+
+<header class="cab">
+  <div>
+    <p class="marca">unattended<i>.io</i></p>
+    <span class="eyebrow">( producto · onboarding bot )</span>
+    <h1>El dato entra una vez.</h1>
+    <p>Captura los datos del cliente por WhatsApp o web, valida su información fiscal
+       y alimenta tu CRM. Cero recaptura.</p>
+  </div>
+  <button class="reiniciar" id="btnReiniciar" type="button">reiniciar demo</button>
+</header>
+
+<main class="escena">
+
+  <section class="col">
+    <span class="eyebrow">( 1 · la conversación )</span>
+    <div class="chat">
+      <div class="canal">
+        <span class="punto" aria-hidden="true"></span>
+        <span>WhatsApp Business · Distribuidora del Norte — empresa de ejemplo</span>
+      </div>
+      <div class="hilo" id="hilo" role="log" aria-live="polite" aria-label="Conversación"></div>
+      <div class="control" id="control"></div>
+    </div>
+  </section>
+
+  <aside class="col">
+    <span class="eyebrow">( 2 · el expediente, en vivo )</span>
+    <div class="ficha">
+      <div class="ficha-cab">
+        <div>
+          <h2>Alta de cliente</h2>
+          <span class="sub" id="contador">0 de 9 datos</span>
+        </div>
+        <span class="estado" id="estado">sin empezar</span>
+      </div>
+      <div id="campos"></div>
+      <div class="doc" id="doc"></div>
+      <div id="crm"></div>
+    </div>
+  </aside>
+
+</main>
+
+<footer class="pie">
+  <div>
+    Distribuidora del Norte y Refacciones Zamora son empresas inventadas para esta demo.
+    Los RFC, correos, teléfonos y direcciones que aparecen son de ejemplo y no corresponden
+    a ninguna persona ni empresa real.<br>
+    La validación de RFC sí es real: estructura, fecha y dígito verificador con el algoritmo
+    del SAT. Puedes teclear el que quieras en el campo y ver qué contesta.
+  </div>
+</footer>
+
+<div class="barra-movil" aria-hidden="true">
+  <span>Expediente · <b id="contadorMovil">0 de 9</b></span>
+  <button type="button" id="verFicha">ver ficha</button>
+</div>
+
+<script>
+(function(){
+  'use strict';
+
+  var quieto = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ════════════════════════════════════════════════════════════════
+     1 · Validación de RFC — la de verdad
+     Estructura + fecha real + dígito verificador (algoritmo del SAT).
+     Se comprobó contra RFC públicos conocidos: SAT970701NN3,
+     CFE370814QI0, GODE561231GR8.
+     ════════════════════════════════════════════════════════════════ */
+
+  var TABLA = '0123456789ABCDEFGHIJKLMN&OPQRSTUVWXYZ';
+
+  function valorChar(c){
+    if (c === ' ') return 37;
+    if (c === 'Ñ') return 38;
+    var i = TABLA.indexOf(c);
+    return i < 0 ? -1 : i;
+  }
+
+  function digitoVerificador(base){
+    // base = RFC sin el último carácter (11 para moral, 12 para física)
+    var s = base.length === 11 ? ' ' + base : base;
+    var suma = 0;
+    for (var i = 0; i < 12; i++){
+      var v = valorChar(s.charAt(i));
+      if (v < 0) return null;
+      suma += v * (13 - i);
+    }
+    var r = suma % 11;
+    if (r === 0) return '0';
+    if (r === 1) return 'A';
+    return String(11 - r);
+  }
+
+  function bisiesto(a){ return (a % 4 === 0 && a % 100 !== 0) || a % 400 === 0; }
+
+  function fechaValida(yy, mm, dd){
+    if (mm < 1 || mm > 12 || dd < 1) return false;
+    var dias = [31,28,31,30,31,30,31,31,30,31,30,31][mm - 1];
+    if (mm === 2 && (bisiesto(1900 + yy) || bisiesto(2000 + yy))) dias = 29;
+    return dd <= dias;
+  }
+
+  function anioReal(yy){
+    var a = 2000 + yy;
+    return a > (new Date()).getFullYear() ? 1900 + yy : a;
+  }
+
+  function limpia(txt){
+    return String(txt || '').toUpperCase().replace(/[\s\-.–—]/g, '');
+  }
+
+  // Devuelve {ok:true, rfc, fecha:{...}} o {ok:false, motivo:'...'} donde
+  // el motivo ya viene redactado como lo diría el agente.
+  function validaRfc(bruto, tipo){
+    var v = limpia(bruto);
+    if (!v) return { ok:false, motivo:'No me llegó nada. ¿Me manda el RFC de la empresa?' };
+
+    var raro = v.match(/[^A-ZÑ&0-9]/);
+    if (raro) return { ok:false, motivo:'Ahí viene un carácter que un RFC no usa: «' + raro[0] + '». ¿Me lo repite?' };
+
+    var esperado = tipo === 'fisica' ? 13 : 12;
+
+    if (v.length === 13 && tipo === 'moral'){
+      return { ok:false, motivo:'Ese RFC trae 13 caracteres, o sea que es de persona física. La cuenta la abrimos a nombre de la empresa, así que necesito el de la empresa: 12 caracteres. Si prefiere que quede a su nombre, dígamelo y lo cambio desde el principio.' };
+    }
+    if (v.length !== esperado){
+      return { ok:false, motivo:'Ese RFC trae ' + v.length + ' ' + (v.length === 1 ? 'carácter' : 'caracteres') + '. El de una persona moral trae 12, contando la homoclave. ¿Me lo revisa?' };
+    }
+
+    var nLetras = esperado === 13 ? 4 : 3;
+    var letras = v.slice(0, nLetras);
+    if (!/^[A-ZÑ&]+$/.test(letras)){
+      return { ok:false, motivo:'Los primeros ' + nLetras + ' caracteres de un RFC son letras y ahí me llegó «' + letras + '». ¿Me lo repite?' };
+    }
+
+    var fecha = v.slice(nLetras, nLetras + 6);
+    if (!/^\d{6}$/.test(fecha)){
+      return { ok:false, motivo:'En medio del RFC van seis dígitos con la fecha —año, mes y día— y ahí me llegó «' + fecha + '». ¿Me lo repite?' };
+    }
+
+    var yy = parseInt(fecha.slice(0,2), 10);
+    var mm = parseInt(fecha.slice(2,4), 10);
+    var dd = parseInt(fecha.slice(4,6), 10);
+    if (!fechaValida(yy, mm, dd)){
+      return { ok:false, motivo:'La fecha que trae en medio —día ' + fecha.slice(4,6) + ', mes ' + fecha.slice(2,4) + '— no existe. Ahí hay un dedazo. ¿Me lo repite?' };
+    }
+
+    var homo = v.slice(nLetras + 6);
+    if (!/^[A-ZÑ&0-9]{3}$/.test(homo)){
+      return { ok:false, motivo:'La homoclave son tres caracteres al final y ahí me llegó «' + homo + '». ¿Me lo repite?' };
+    }
+
+    var base = v.slice(0, v.length - 1);
+    var dado = v.charAt(v.length - 1);
+    var calc = digitoVerificador(base);
+    if (calc === null){
+      return { ok:false, motivo:'No pude leer ese RFC. ¿Me lo repite?' };
+    }
+    if (dado !== calc){
+      return {
+        ok:false,
+        corto:'dígito verificador',
+        motivo:'La estructura y la fecha están bien, pero el último carácter no cuadra: con «' + base + '» el dígito verificador tendría que ser ' + calc + ', no ' + dado + '. Casi siempre es un dedazo en la homoclave. ¿Me lo confirma?'
+      };
+    }
+
+    return {
+      ok:true,
+      rfc:v,
+      iso: anioReal(yy) + '-' + fecha.slice(2,4) + '-' + fecha.slice(4,6),
+      bonita: fecha.slice(4,6) + '/' + fecha.slice(2,4) + '/' + anioReal(yy)
+    };
+  }
+
+  function motivoCorto(res){
+    if (res.corto) return res.corto;
+    if (/no existe/.test(res.motivo)) return 'fecha imposible';
+    if (/13 caracteres/.test(res.motivo)) return 'es de persona física';
+    if (/caracteres\./.test(res.motivo)) return 'longitud';
+    return 'estructura';
+  }
+
+  function correoValido(c){
+    return /^[^\s@]+@[^\s@.]+(\.[^\s@.]+)+$/.test(String(c || '').trim());
+  }
+
+  /* ════════════════════════════════════════════════════════════════
+     2 · Estado del expediente
+     ════════════════════════════════════════════════════════════════ */
+
+  var CAMPOS = [
+    { k:'telefono',   etq:'Teléfono',              fuente:'lo trae el canal' },
+    { k:'tipo',       etq:'Tipo de persona' },
+    { k:'razon',      etq:'Razón social' },
+    { k:'rfc',        etq:'RFC',                   mono:true },
+    { k:'fecha',      etq:'Fecha de constitución', fuente:'sale del RFC, no se pregunta' },
+    { k:'regimen',    etq:'Régimen fiscal' },
+    { k:'uso',        etq:'Uso de CFDI' },
+    { k:'correo',     etq:'Correo de facturación' },
+    { k:'direccion',  etq:'Dirección de entrega' }
+  ];
+
+  var datos, rfcMal, docEstado, estadoGeneral, i, ocupado, timers;
+
+  function reset(){
+    datos = {};
+    rfcMal = null;
+    docEstado = 'nada';      // nada | espera | recibida
+    estadoGeneral = 'inicio'; // inicio | curso | espera | listo
+    i = 0;
+    ocupado = false;
+    (timers || []).forEach(clearTimeout);
+    timers = [];
+    document.getElementById('hilo').innerHTML = '';
+    document.getElementById('crm').innerHTML = '';
+    pintaFicha();
+    correr();
+  }
+
+  function llena(k, v, extra){
+    datos[k] = { v:v, extra:extra || null };
+    pintaFicha(k);
+  }
+
+  /* ════════════════════════════════════════════════════════════════
+     3 · Pintado
+     ════════════════════════════════════════════════════════════════ */
+
+  var elCampos   = document.getElementById('campos');
+  var elDoc      = document.getElementById('doc');
+  var elEstado   = document.getElementById('estado');
+  var elContador = document.getElementById('contador');
+  var elMovil    = document.getElementById('contadorMovil');
+  var elHilo     = document.getElementById('hilo');
+  var elControl  = document.getElementById('control');
+  var elCrm      = document.getElementById('crm');
+
+  function esc(s){
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  function pintaFicha(recien){
+    var html = '';
+    var llenos = 0;
+
+    CAMPOS.forEach(function(c){
+      var d = datos[c.k];
+      var malo = (c.k === 'rfc' && !d && rfcMal);
+      var clases = 'campo' + (d ? ' lleno' : '') + (malo ? ' malo' : '') + (recien === c.k ? ' flash' : '');
+      if (d) llenos++;
+      html += '<div class="' + clases + '">';
+      html += '<span class="etq">' + esc(c.etq) + '</span>';
+      if (d){
+        html += '<span class="val' + (c.mono ? ' mono' : '') + '">' + esc(d.v) + '</span>';
+        if (d.extra) html += '<span class="fuente">' + esc(d.extra) + '</span>';
+        else if (c.fuente) html += '<span class="fuente">' + esc(c.fuente) + '</span>';
+      } else if (malo){
+        html += '<span class="val mono">' + esc(rfcMal.txt) + '</span>';
+        html += '<span class="nota-mal">rechazado · ' + esc(rfcMal.motivo) + '</span>';
+      } else {
+        html += '<span class="val vacio">— pendiente</span>';
+      }
+      html += '</div>';
+    });
+
+    elCampos.innerHTML = html;
+
+    var texto = llenos + ' de ' + CAMPOS.length + ' datos';
+    elContador.textContent = texto;
+    elMovil.textContent = llenos + ' de ' + CAMPOS.length;
+
+    // Documento
+    var dc = '', clase = 'doc';
+    if (docEstado === 'recibida'){
+      clase += ' ok';
+      dc = '<span class="etq">Constancia de situación fiscal</span>' +
+           '<span class="val"><b>Constancia_Refacciones_Zamora_2026.pdf</b> — recibida. ' +
+           'El RFC del PDF coincide con el capturado.</span>';
+    } else if (docEstado === 'espera'){
+      clase += ' espera';
+      dc = '<span class="etq">Constancia de situación fiscal</span>' +
+           '<span class="val">Falta. El agente <b>no la da por vista</b>: el expediente queda abierto.</span>' +
+           '<span class="recordatorio">recordatorio programado · mañana 10:00</span>';
+    } else {
+      dc = '<span class="etq">Constancia de situación fiscal</span>' +
+           '<span class="val">— pendiente</span>';
+    }
+    elDoc.className = clase;
+    elDoc.innerHTML = dc;
+
+    // Estado general
+    var e = { clase:'', txt:'sin empezar' };
+    if (estadoGeneral === 'curso') e = { clase:'', txt:'en captura' };
+    if (estadoGeneral === 'espera') e = { clase:'espera', txt:'falta 1 documento' };
+    if (estadoGeneral === 'listo')  e = { clase:'listo', txt:'listo para el CRM' };
+    elEstado.className = 'estado ' + e.clase;
+    elEstado.textContent = e.txt;
+  }
+
+  function alFondo(){
+    elHilo.scrollTop = elHilo.scrollHeight;
+  }
+
+  function burbuja(de, txt, hora, adjunto){
+    var d = document.createElement('div');
+    d.className = 'msg ' + de;
+    var html = '';
+    if (de === 'agente') html += '<span class="quien">agente</span>';
+    if (adjunto){
+      html += '<span class="adjunto">' +
+        '<svg width="15" height="18" viewBox="0 0 15 18" fill="none" aria-hidden="true">' +
+        '<path d="M9 1H2.5A1.5 1.5 0 0 0 1 2.5v13A1.5 1.5 0 0 0 2.5 17h10a1.5 1.5 0 0 0 1.5-1.5V6L9 1Z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/>' +
+        '<path d="M9 1v5h5" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>' +
+        esc(adjunto) + '</span>';
+    } else {
+      html += esc(txt).replace(/«([^»]+)»/g, '«<strong>$1</strong>»');
+    }
+    if (hora) html += '<span class="hora">' + esc(hora) + '</span>';
+    d.innerHTML = html;
+    elHilo.appendChild(d);
+    alFondo();
+  }
+
+  function separador(txt){
+    var d = document.createElement('div');
+    d.className = 'sistema';
+    d.innerHTML = '<span>' + esc(txt) + '</span>';
+    elHilo.appendChild(d);
+    alFondo();
+  }
+
+  function marcaRechazo(txt){
+    var d = document.createElement('div');
+    d.className = 'rechazo';
+    d.textContent = '✗ no pasó la validación · ' + txt;
+    elHilo.appendChild(d);
+    alFondo();
+  }
+
+  function escribiendo(on){
+    var y = document.getElementById('typing');
+    if (on && !y){
+      var d = document.createElement('div');
+      d.id = 'typing';
+      d.className = 'escribiendo';
+      d.innerHTML = '<i></i><i></i><i></i>';
+      elHilo.appendChild(d);
+      alFondo();
+    } else if (!on && y){
+      y.parentNode.removeChild(y);
+    }
+  }
+
+  function espera(ms, fn){
+    if (quieto) { fn(); return; }
+    timers.push(setTimeout(fn, ms));
+  }
+
+  /* ════════════════════════════════════════════════════════════════
+     4 · El guion
+     ════════════════════════════════════════════════════════════════ */
+
+  var RFC_OK = 'RZA1806057K4';
+
+  var guion = [
+    { t:'ctrl', tipo:'inicio' },
+
+    { t:'msg', de:'cliente', hora:'21:47',
+      txt:'Buenas noches. Me pasaron su contacto. Quiero abrir cuenta para comprarles a crédito, ¿qué necesitan de mi parte?',
+      efecto:function(){ estadoGeneral = 'curso'; llena('telefono','+52 81 1234 5678'); } },
+
+    { t:'msg', de:'agente', hora:'21:47',
+      txt:'Buenas noches. Yo le tomo los datos ahora mismo: son seis preguntas y un documento. ¿La cuenta va a nombre de una empresa o suya, como persona física?' },
+
+    { t:'ctrl', tipo:'chips', pista:'El cliente contesta', ops:[
+      { txt:'A nombre de la empresa.', hora:'21:48',
+        efecto:function(){ llena('tipo','Persona moral','así que el RFC va de 12'); } }
+    ]},
+
+    { t:'msg', de:'agente', hora:'21:48',
+      txt:'Va. Necesito la razón social tal como aparece en su constancia, con la forma jurídica completa.' },
+
+    { t:'ctrl', tipo:'chips', pista:'El cliente contesta', ops:[
+      { txt:'Refacciones Zamora, S.A. de C.V.', hora:'21:48',
+        efecto:function(){ llena('razon','Refacciones Zamora, S.A. de C.V.'); } }
+    ]},
+
+    { t:'msg', de:'agente', hora:'21:49',
+      txt:'Gracias. Ahora el RFC de la empresa: doce caracteres, con homoclave.' },
+
+    { t:'ctrl', tipo:'rfc' },
+
+    { t:'msg', de:'agente', hora:'21:49',
+      txt:'RFC válido. La fecha de constitución viene dentro del propio RFC, así que ya quedó en el expediente y no se la pregunto. ¿Bajo qué régimen fiscal facturan?' },
+
+    { t:'ctrl', tipo:'chips', pista:'El cliente contesta', ops:[
+      { txt:'601 — General de Ley Personas Morales', hora:'21:50',
+        efecto:function(){ llena('regimen','601 · General de Ley Personas Morales'); } }
+    ]},
+
+    { t:'msg', de:'agente', hora:'21:50',
+      txt:'¿Y qué uso de CFDI quiere en sus facturas?' },
+
+    { t:'ctrl', tipo:'chips', pista:'El cliente contesta', ops:[
+      { txt:'G01 — Adquisición de mercancías', hora:'21:50',
+        efecto:function(){ llena('uso','G01 · Adquisición de mercancías'); } }
+    ]},
+
+    { t:'msg', de:'agente', hora:'21:50',
+      txt:'¿A qué correo le mandamos las facturas?' },
+
+    { t:'ctrl', tipo:'chips', pista:'El cliente contesta — prueba primero el de arriba', ops:[
+      { txt:'compras@refaccioneszamora', hora:'21:51',
+        error:'Ese correo se quedó a medias: después de «refaccioneszamora» falta el dominio, el .algo. Si le mando ahí la factura, rebota. ¿Me lo escribe completo?',
+        corto:'correo sin dominio' },
+      { txt:'compras@refaccioneszamora.mx', hora:'21:51',
+        efecto:function(){ llena('correo','compras@refaccioneszamora.mx'); } }
+    ]},
+
+    { t:'msg', de:'agente', hora:'21:51',
+      txt:'Anotado. ¿A dónde le entregamos? Calle y número, colonia, código postal y estado.' },
+
+    { t:'ctrl', tipo:'chips', pista:'El cliente contesta', ops:[
+      { txt:'Av. Industria 118, bodega 4, Parque Industrial Norte, 66600 Apodaca, N.L.', hora:'21:52',
+        efecto:function(){ llena('direccion','Av. Industria 118, bodega 4, Parque Industrial Norte, 66600 Apodaca, N.L.'); } }
+    ]},
+
+    { t:'msg', de:'agente', hora:'21:52',
+      txt:'Con eso tengo los datos. Me falta un documento: su constancia de situación fiscal en PDF, la de este año. Es para cotejar contra el SAT lo que usted me dictó.' },
+
+    { t:'ctrl', tipo:'doc' },
+
+    // ── camino A: la manda ──────────────────────────────────────────
+    { id:'adjunta', t:'msg', de:'cliente', hora:'21:53',
+      adjunto:'Constancia_Refacciones_Zamora_2026.pdf',
+      efecto:function(){ docEstado = 'recibida'; estadoGeneral = 'listo'; pintaFicha(); } },
+
+    { t:'msg', de:'agente', hora:'21:53',
+      txt:'Recibida. Cotejé el RFC del PDF contra el que me dictó: coinciden. Su cuenta queda dada de alta y le llega el correo de confirmación en un minuto.' },
+
+    { t:'fin', modo:'listo' },
+
+    // ── camino B: no la tiene ───────────────────────────────────────
+    { id:'sin-doc', t:'msg', de:'cliente', hora:'21:53',
+      txt:'Ahorita no la tengo a la mano, está en la compu de la oficina.' },
+
+    { t:'msg', de:'agente', hora:'21:53',
+      txt:'Sin problema, y no se la invento ni la doy por vista. Dejo el expediente abierto con lo que ya me dio y mañana a las 10:00 le mando el enlace para subirla. Le aviso de una vez: hasta que llegue la constancia, el alta entra al CRM marcada como incompleta y facturación no le puede timbrar.',
+      efecto:function(){ docEstado = 'espera'; estadoGeneral = 'espera'; pintaFicha(); } },
+
+    { t:'fin', modo:'espera' },
+
+    // ── el documento llega después ──────────────────────────────────
+    { id:'llega-doc', t:'sep', txt:'al día siguiente' },
+
+    { t:'msg', de:'agente', hora:'10:00',
+      txt:'Buenos días. Le dejo el enlace para subir su constancia: es lo único que falta para activar la cuenta.' },
+
+    { t:'msg', de:'cliente', hora:'10:14',
+      adjunto:'Constancia_Refacciones_Zamora_2026.pdf',
+      efecto:function(){ docEstado = 'recibida'; estadoGeneral = 'listo'; pintaFicha(); } },
+
+    { t:'msg', de:'agente', hora:'10:14',
+      txt:'Recibida. El RFC del PDF coincide con el que me dictó anoche. Su cuenta queda activa, y no tuvo que repetirme ningún dato.' },
+
+    { t:'fin', modo:'listo' }
+  ];
+
+  function indiceDe(id){
+    for (var n = 0; n < guion.length; n++) if (guion[n].id === id) return n;
+    return guion.length;
+  }
+
+  /* ════════════════════════════════════════════════════════════════
+     5 · Motor
+     ════════════════════════════════════════════════════════════════ */
+
+  function correr(){
+    if (ocupado) return;
+    var paso = guion[i];
+    if (!paso) return;
+
+    if (paso.t === 'ctrl'){ pintaControl(paso); return; }
+    if (paso.t === 'fin'){ pintaFin(paso.modo); return; }
+
+    if (paso.t === 'sep'){
+      separador(paso.txt);
+      i++;
+      correr();
+      return;
+    }
+
+    // mensaje
+    if (paso.de === 'agente'){
+      ocupado = true;
+      elControl.innerHTML = '<span class="pista">el agente está contestando…</span>';
+      escribiendo(true);
+      espera(650 + Math.min(paso.txt ? paso.txt.length * 8 : 0, 900), function(){
+        escribiendo(false);
+        burbuja('agente', paso.txt, paso.hora, paso.adjunto);
+        if (paso.efecto) paso.efecto();
+        ocupado = false;
+        i++;
+        correr();
+      });
+    } else {
+      burbuja(paso.de, paso.txt, paso.hora, paso.adjunto);
+      if (paso.efecto) paso.efecto();
+      i++;
+      correr();
+    }
+  }
+
+  function avanzaA(idx){ i = idx; correr(); }
+
+  /* ── Controles ──────────────────────────────────────────────────── */
+
+  function pintaControl(paso){
+    elControl.innerHTML = '';
+
+    if (paso.tipo === 'inicio'){
+      var p = document.createElement('span');
+      p.className = 'pista';
+      p.textContent = 'Un martes, 21:47';
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'principal';
+      b.textContent = '▸ entra un mensaje';
+      b.addEventListener('click', function(){ i++; correr(); });
+      elControl.appendChild(p);
+      elControl.appendChild(b);
+      return;
+    }
+
+    if (paso.tipo === 'chips'){
+      var pi = document.createElement('span');
+      pi.className = 'pista';
+      pi.textContent = paso.pista || 'El cliente contesta';
+      elControl.appendChild(pi);
+
+      paso.ops.forEach(function(op){
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'chip';
+        b.textContent = op.txt;
+        b.addEventListener('click', function(){
+          if (ocupado) return;
+          burbuja('cliente', op.txt, op.hora);
+          if (op.error){
+            marcaRechazo(op.corto || 'dato mal formado');
+            b.disabled = true;
+            ocupado = true;
+            escribiendo(true);
+            espera(700, function(){
+              escribiendo(false);
+              burbuja('agente', op.error, op.hora);
+              ocupado = false;
+              alFondo();
+            });
+            return;
+          }
+          if (op.efecto) op.efecto();
+          i++;
+          correr();
+        });
+        elControl.appendChild(b);
+      });
+      return;
+    }
+
+    if (paso.tipo === 'rfc'){ controlRfc(); return; }
+    if (paso.tipo === 'doc'){ controlDoc(); return; }
+  }
+
+  function controlRfc(){
+    var pista = document.createElement('span');
+    pista.className = 'pista';
+    pista.textContent = 'El cliente teclea su RFC — o tecléalo tú';
+    elControl.appendChild(pista);
+
+    var forma = document.createElement('form');
+    forma.className = 'forma';
+    var inp = document.createElement('input');
+    inp.type = 'text';
+    inp.maxLength = 20;
+    inp.autocomplete = 'off';
+    inp.spellcheck = false;
+    inp.setAttribute('aria-label', 'RFC del cliente');
+    inp.placeholder = 'RFC de la empresa';
+    var env = document.createElement('button');
+    env.type = 'submit';
+    env.textContent = 'enviar';
+    forma.appendChild(inp);
+    forma.appendChild(env);
+
+    forma.addEventListener('submit', function(ev){
+      ev.preventDefault();
+      mandaRfc(inp.value);
+      inp.value = '';
+      inp.focus();
+    });
+    elControl.appendChild(forma);
+
+    var muestras = document.createElement('div');
+    muestras.className = 'muestras';
+    [
+      { v:RFC_OK,          e:'el correcto' },
+      { v:'RZA1806057J4',  e:'con un dedazo' },
+      { v:'RZA1806327K1',  e:'fecha que no existe' }
+    ].forEach(function(m){
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'muestra';
+      b.innerHTML = esc(m.v) + '<em>' + esc(m.e) + '</em>';
+      b.addEventListener('click', function(){ mandaRfc(m.v); });
+      muestras.appendChild(b);
+    });
+    elControl.appendChild(muestras);
+
+    var nota = document.createElement('p');
+    nota.className = 'aclara';
+    nota.textContent = 'La validación corre completa: longitud según el tipo de persona, que la fecha exista y el dígito verificador con el algoritmo del SAT. No es un palomeo.';
+    elControl.appendChild(nota);
+  }
+
+  function mandaRfc(bruto){
+    if (ocupado) return;
+    var txt = limpia(bruto);
+    burbuja('cliente', txt || '(vacío)', '21:49');
+
+    var res = validaRfc(bruto, 'moral');
+
+    if (!res.ok){
+      rfcMal = { txt: txt || '(vacío)', motivo: motivoCorto(res) };
+      pintaFicha('rfc');
+      marcaRechazo(motivoCorto(res));
+      ocupado = true;
+      escribiendo(true);
+      espera(750, function(){
+        escribiendo(false);
+        burbuja('agente', res.motivo, '21:49');
+        ocupado = false;
+      });
+      return;
+    }
+
+    rfcMal = null;
+    llena('rfc', res.rfc, 'estructura · fecha · dígito verificador');
+    llena('fecha', res.bonita);
+    i++;
+    correr();
+  }
+
+  function controlDoc(){
+    var pista = document.createElement('span');
+    pista.className = 'pista';
+    pista.textContent = 'Los dos caminos — enseña los dos';
+    elControl.appendChild(pista);
+
+    var a = document.createElement('button');
+    a.type = 'button';
+    a.className = 'chip';
+    a.innerHTML = 'Adjuntar la constancia<span class="marca-chip">el expediente cierra completo</span>';
+    a.addEventListener('click', function(){ avanzaA(indiceDe('adjunta')); });
+
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'chip';
+    b.innerHTML = 'No la tengo a la mano<span class="marca-chip">el agente no completa el expediente solo</span>';
+    b.addEventListener('click', function(){ avanzaA(indiceDe('sin-doc')); });
+
+    elControl.appendChild(a);
+    elControl.appendChild(b);
+  }
+
+  /* ── Cierre ─────────────────────────────────────────────────────── */
+
+  function pintaFin(modo){
+    pintaCrm(modo);
+
+    elControl.innerHTML = '';
+    var pista = document.createElement('span');
+    pista.className = 'pista';
+    pista.textContent = modo === 'listo' ? 'Fin del escenario' : 'El expediente quedó abierto';
+    elControl.appendChild(pista);
+
+    if (modo === 'espera'){
+      var seguir = document.createElement('button');
+      seguir.type = 'button';
+      seguir.className = 'principal';
+      seguir.textContent = '▸ el cliente la manda al día siguiente';
+      seguir.addEventListener('click', function(){ avanzaA(indiceDe('llega-doc')); });
+      elControl.appendChild(seguir);
+    }
+
+    var otra = document.createElement('button');
+    otra.type = 'button';
+    otra.className = modo === 'espera' ? 'secundario' : 'principal';
+    otra.textContent = 'reiniciar demo';
+    otra.addEventListener('click', reset);
+    elControl.appendChild(otra);
+
+    alFondo();
+
+    // El CRM es el remate: que se vea sin que nadie tenga que buscarlo.
+    var panel = document.querySelector('.crm');
+    if (panel && panel.scrollIntoView){
+      espera(120, function(){
+        panel.scrollIntoView({ behavior: quieto ? 'auto' : 'smooth', block:'end' });
+      });
+    }
+  }
+
+  function pintaCrm(modo){
+    function val(k){ return datos[k] ? datos[k].v : '—'; }
+    var completo = modo === 'listo';
+
+    var filas = [
+      ['cliente_id',     'CLI-04812'],
+      ['razon_social',   val('razon')],
+      ['rfc',            val('rfc') + '  <span class="ok">✓ validado</span>'],
+      ['fecha_const',    val('fecha')],
+      ['regimen_fiscal', val('regimen').split(' · ')[0]],
+      ['uso_cfdi',       val('uso').split(' · ')[0]],
+      ['correo_fact',    val('correo')],
+      ['telefono',       val('telefono')],
+      ['direccion',      val('direccion')],
+      ['constancia_sf',  completo
+        ? '<span class="ok">recibida · cotejada</span>'
+        : '<span class="pend">PENDIENTE</span>'],
+      ['estado',         completo
+        ? '<span class="ok">activo</span>'
+        : '<span class="pend">incompleto · no facturable</span>'],
+      ['capturado_por',  'agente · whatsapp'],
+      ['recaptura',      '<span class="ok">0 campos</span>']
+    ];
+
+    var html = '<div class="crm"><span class="etq">( 3 · lo que llega al CRM )</span><table><tbody>';
+    filas.forEach(function(f){
+      html += '<tr><td>' + f[0] + '</td><td><b>' + f[1] + '</b></td></tr>';
+    });
+    html += '</tbody></table>';
+
+    html += '<p class="cierre">' + (completo
+      ? 'Nueve datos y un documento. El cliente los dio <b>una sola vez</b>, un martes a las diez de la noche, y así entraron al CRM: nadie los volvió a teclear.'
+      : 'El registro entra <b>incompleto y marcado</b>. Es la parte que importa: el agente no rellena lo que no tiene ni deja pasar un expediente a medias sin avisar.')
+      + '<span class="sim">escenario simulado · datos de ejemplo</span></p></div>';
+
+    elCrm.innerHTML = html;
+  }
+
+  /* ── Arranque ───────────────────────────────────────────────────── */
+
+  document.getElementById('btnReiniciar').addEventListener('click', reset);
+  document.getElementById('verFicha').addEventListener('click', function(){
+    var f = document.querySelector('.ficha');
+    if (f && f.scrollIntoView) f.scrollIntoView({ behavior: quieto ? 'auto' : 'smooth', block:'start' });
+  });
+
+  reset();
+})();
+</script>
+
+</body>
+</html>

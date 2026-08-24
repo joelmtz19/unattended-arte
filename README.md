@@ -56,3 +56,16 @@ Branch: `main` / `(root)` → Save.**
 
 Comprueba que sirve abriendo cualquier imagen de `img/` en el navegador. Si da
 404, espera un minuto: el primer despliegue tarda más.
+
+## Las demos
+
+`demos/` hospeda las cinco demos de producto para poder mandarlas por link —
+por WhatsApp abren en cualquier celular, cosa que un HTML adjunto no hace.
+
+La fuente vive en `unattended-agents/demos/`. Lo de aquí son copias con dos
+etiquetas `noindex` añadidas, más el `Disallow` del `robots.txt`. No es por los
+datos, que son simulados y están rotulados: es que una demo suelta en Google se
+lee como un producto en operación, y unattended.io todavía no tiene clientes.
+
+Para actualizarlas, se copian de nuevo desde la fuente y se les vuelve a poner
+el `noindex`.

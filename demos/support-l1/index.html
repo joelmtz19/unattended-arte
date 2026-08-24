@@ -1,0 +1,1173 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta name="robots" content="noindex, nofollow">
+<meta name="googlebot" content="noindex, nofollow">
+
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>unattended.io — Support L1 (demo)</title>
+<meta name="description" content="Demo con datos de ejemplo del agente Support L1 de unattended.io: contesta lo repetido 24/7 y escala a una persona con el contexto ya recogido.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* ══════════════════════════════════════════════════════════════════
+   Support L1 — demo de producto de unattended.io
+   Un solo archivo, sin dependencias. Paleta y tipografía tomadas de
+   unattended-site/src/app/globals.css. Todo dato es de ejemplo.
+   ══════════════════════════════════════════════════════════════════ */
+
+:root{
+  --bg:#fbfbfd;
+  --panel:#ffffff;
+  --ink:#1d1d1f;
+  --muted:#57575c;
+  --faint:#6e6e73;
+  --line:rgba(29,29,31,.11);
+  --line-soft:rgba(29,29,31,.07);
+  --accent:#0f6862;
+  --accent-soft:#7ad0c6;
+  --accent-wash:rgba(15,104,98,.07);
+  --field:#101013;
+  --radius:14px;
+}
+
+*{ box-sizing:border-box }
+html,body{ margin:0; padding:0 }
+
+body{
+  background:var(--bg);
+  color:var(--ink);
+  font-family:'Archivo',system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  font-size:16px;
+  line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+
+.mono{ font-family:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace }
+
+/* ── Franja de aviso ─────────────────────────────────────────────── */
+
+.aviso{
+  background:var(--field);
+  color:#f5f5f7;
+  padding:11px 20px;
+  font-size:13.5px;
+  line-height:1.45;
+  text-align:center;
+}
+.aviso b{ color:#fff; font-weight:600 }
+.aviso .dot{ color:var(--accent-soft) }
+
+/* ── Encabezado ──────────────────────────────────────────────────── */
+
+.wrap{ max-width:1180px; margin:0 auto; padding:0 20px }
+
+header.top{ padding:26px 0 0 }
+.brandline{
+  display:flex; align-items:baseline; gap:14px; flex-wrap:wrap;
+  padding-bottom:18px; border-bottom:1px solid var(--line);
+}
+.wordmark{ font-size:19px; font-weight:700; letter-spacing:-.035em }
+.wordmark span{ color:var(--accent) }
+.eyebrow{
+  font-family:'IBM Plex Mono',ui-monospace,monospace;
+  font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--faint);
+}
+
+.intro{ padding:30px 0 26px; max-width:760px }
+h1{
+  margin:0 0 14px;
+  font-size:clamp(27px,4.4vw,40px);
+  line-height:1.08;
+  letter-spacing:-.042em;
+  font-weight:700;
+}
+.intro p{ margin:0 0 10px; color:var(--muted); font-size:16.5px }
+.intro p.lead{ color:var(--ink) }
+.rule{ width:52px; height:3px; background:var(--accent); margin:0 0 18px }
+
+/* ── Rejilla principal ───────────────────────────────────────────── */
+
+.grid{
+  display:grid;
+  grid-template-columns:minmax(0,1.02fr) minmax(0,.98fr);
+  gap:20px;
+  align-items:stretch;
+  padding-bottom:8px;
+}
+.grid > section{ display:flex; flex-direction:column; min-width:0 }
+
+.col-label{
+  display:flex; align-items:center; gap:9px;
+  font-family:'IBM Plex Mono',ui-monospace,monospace;
+  font-size:11px; letter-spacing:.15em; text-transform:uppercase;
+  color:var(--faint);
+  margin:0 0 9px;
+}
+.col-label i{ width:7px; height:7px; border-radius:50%; background:var(--accent); font-style:normal }
+.col-label.b i{ background:#c9c9cf }
+
+/* ── Panel del chat ──────────────────────────────────────────────── */
+
+.chat{
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  overflow:hidden;
+  display:flex; flex-direction:column;
+  flex:1 1 auto;
+}
+.chat-head{
+  background:var(--field);
+  color:#f5f5f7;
+  padding:13px 16px;
+  display:flex; align-items:center; gap:12px;
+}
+.avatar{
+  width:34px; height:34px; border-radius:50%;
+  background:rgba(122,208,198,.16);
+  color:var(--accent-soft);
+  display:flex; align-items:center; justify-content:center;
+  font-family:'IBM Plex Mono',ui-monospace,monospace;
+  font-size:11px; letter-spacing:.04em;
+  flex:0 0 auto;
+}
+.chat-who{ min-width:0 }
+.chat-who b{ display:block; font-size:14.5px; font-weight:600; color:#fff; letter-spacing:-.01em }
+.chat-who span{
+  display:block;
+  font-family:'IBM Plex Mono',ui-monospace,monospace;
+  font-size:10.5px; letter-spacing:.06em; color:rgba(245,245,247,.6);
+}
+.chat-canal{
+  margin-left:auto;
+  font-family:'IBM Plex Mono',ui-monospace,monospace;
+  font-size:10px; letter-spacing:.1em; text-transform:uppercase;
+  color:rgba(245,245,247,.5);
+  border:1px solid rgba(245,245,247,.2);
+  border-radius:99px; padding:3px 9px;
+  white-space:nowrap;
+}
+
+.log{
+  padding:16px 16px 8px;
+  flex:1 1 auto;
+  min-height:392px;
+  height:0;
+  overflow-y:auto;
+  background:
+    linear-gradient(180deg,rgba(29,29,31,.025),transparent 22px),
+    var(--panel);
+}
+
+.daymark{
+  text-align:center;
+  font-family:'IBM Plex Mono',ui-monospace,monospace;
+  font-size:10.5px; letter-spacing:.12em; text-transform:uppercase;
+  color:var(--faint);
+  margin:0 0 14px;
+}
+
+.msg{ margin:0 0 12px; max-width:86%; }
+.msg .bubble{
+  border-radius:12px;
+  padding:9px 13px 10px;
+  font-size:15px;
+  line-height:1.5;
+}
+.msg .bubble p{ margin:0 0 7px }
+.msg .bubble p:last-child{ margin:0 }
+.msg .stamp{
+  display:block;
+  font-family:'IBM Plex Mono',ui-monospace,monospace;
+  font-size:10px; color:var(--faint); letter-spacing:.05em;
+  margin-top:4px;
+}
+
+.msg.cliente{ margin-left:auto }
+.msg.cliente .bubble{ background:#f0f0f3; border:1px solid var(--line-soft); border-bottom-right-radius:4px }
+.msg.cliente .stamp{ text-align:right }
+
+.msg.agente .bubble{
+  background:var(--accent-wash);
+  border:1px solid rgba(15,104,98,.16);
+  border-bottom-left-radius:4px;
+}
+.msg.agente .bubble .dato{
+  display:block;
+  font-family:'IBM Plex Mono',ui-monospace,monospace;
+  font-size:13px; letter-spacing:.01em; color:var(--accent);
+  margin-top:6px;
+}
+.msg.agente .bubble .ejemplo{
+  display:block;
+  font-family:'IBM Plex Mono',ui-monospace,monospace;
+  font-size:10.5px; letter-spacing:.06em; color:var(--faint);
+  margin-top:7px;
+}
+
+.msg.persona .bubble{
+  background:#fff;
+  border:1px solid var(--line);
+  border-left:3px solid var(--ink);
+  border-bottom-left-radius:4px;
+}
+.msg.persona .quien{
+  font-family:'IBM Plex Mono',ui-monospace,monospace;
+  font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink);
+  display:block; margin-bottom:5px;
+}
+
+.msg.corte{ max-width:100%; margin:16px 0 14px }
+.corte-linea{
+  display:flex; align-items:center; gap:10px;
+  font-family:'IBM Plex Mono',ui-monospace,monospace;
+  font-size:10.5px; letter-spacing:.1em; text-transform:uppercase;
+  color:var(--accent);
+}
+.corte-linea::before,.corte-linea::after{
+  content:''; flex:1; height:1px; background:rgba(15,104,98,.3);
+}
+
+.typing{ display:flex; gap:4px; align-items:center; padding:3px 2px }
+.typing i{
+  width:6px; height:6px; border-radius:50%; background:var(--accent);
+  opacity:.35; animation:blink 1.1s infinite;
+}
+.typing i:nth-child(2){ animation-delay:.18s }
+.typing i:nth-child(3){ animation-delay:.36s }
+@keyframes blink{ 0%,60%,100%{opacity:.25} 30%{opacity:.9} }
+
+/* ── Entrada ─────────────────────────────────────────────────────── */
+
+.compose{ border-top:1px solid var(--line); padding:13px 16px 15px; background:var(--panel) }
+.sug-label{
+  font-family:'IBM Plex Mono',ui-monospace,monospace;
+  font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--faint);
+  margin:0 0 8px;
+}
+.sugs{ display:flex; flex-wrap:wrap; gap:7px; margin:0 0 12px }
+.sug{
+  font-family:inherit; font-size:13px; line-height:1.3;
+  color:var(--ink); background:#fff;
+  border:1px solid var(--line); border-radius:99px;
+  padding:6px 12px; cursor:pointer;
+  transition:border-color .15s, background .15s;
+}
+.sug:hover{ border-color:var(--accent); background:var(--accent-wash) }
+.sug:focus-visible{ outline:2px solid var(--accent); outline-offset:2px }
+
+form.entrada{ display:flex; gap:8px }
+form.entrada input{
+  flex:1; min-width:0;
+  font-family:inherit; font-size:15px; color:var(--ink);
+  background:#fff;
+  border:1px solid var(--line); border-radius:10px;
+  padding:11px 13px;
+}
+form.entrada input:focus{ outline:none; border-color:var(--accent); box-shadow:0 0 0 3px rgba(15,104,98,.1) }
+form.entrada button{
+  font-family:inherit; font-size:14.5px; font-weight:600; color:#fff;
+  background:var(--accent); border:1px solid var(--accent);
+  border-radius:10px; padding:11px 18px; cursor:pointer;
+  transition:opacity .15s;
+}
+form.entrada button:hover{ opacity:.88 }
+form.entrada button:disabled{ opacity:.45; cursor:default }
+
+/* ── Panel del equipo ────────────────────────────────────────────── */
+
+.equipo{
+  background:var(--field);
+  color:#f5f5f7;
+  border-radius:var(--radius);
+  overflow:hidden;
+  border:1px solid var(--field);
+}
+.eq-head{
+  padding:14px 17px 13px;
+  border-bottom:1px solid rgba(245,245,247,.13);
+  display:flex; align-items:flex-start; gap:12px; flex-wrap:wrap;
+}
+.eq-head h2{ margin:0; font-size:15px; font-weight:600; letter-spacing:-.015em; color:#fff }
+.eq-head p{
+  margin:2px 0 0;
+  font-family:'IBM Plex Mono',ui-monospace,monospace;
+  font-size:10.5px; letter-spacing:.06em; color:rgba(245,245,247,.55);
+}
+.pill{
+  margin-left:auto;
+  font-family:'IBM Plex Mono',ui-monospace,monospace;
+  font-size:10px; letter-spacing:.1em; text-transform:uppercase;
+  border-radius:99px; padding:4px 10px;
+  border:1px solid rgba(122,208,198,.4);
+  color:var(--accent-soft);
+  white-space:nowrap;
+}
+.pill.alerta{ border-color:rgba(255,255,255,.5); background:#fff; color:var(--field); font-weight:500 }
+
+.eq-body{ padding:15px 17px 18px }
+
+.vacio{
+  border:1px dashed rgba(245,245,247,.22);
+  border-radius:10px;
+  padding:18px 16px;
+  text-align:center;
+}
+.vacio b{ display:block; font-size:14.5px; font-weight:600; color:#fff; margin-bottom:5px }
+.vacio p{ margin:0; font-size:13.5px; line-height:1.5; color:rgba(245,245,247,.62) }
+
+.blk{ margin-top:16px }
+.blk:first-child{ margin-top:0 }
+.blk-t{
+  font-family:'IBM Plex Mono',ui-monospace,monospace;
+  font-size:10px; letter-spacing:.14em; text-transform:uppercase;
+  color:rgba(245,245,247,.5);
+  margin:0 0 8px; padding-bottom:6px;
+  border-bottom:1px solid rgba(245,245,247,.13);
+}
+
+.ficha{ margin:0 }
+.ficha .row{
+  display:grid; grid-template-columns:98px 1fr; gap:0 10px;
+  padding:5px 0;
+  font-size:13.5px; line-height:1.45;
+  border-bottom:1px solid rgba(245,245,247,.07);
+}
+.ficha .row:last-child{ border-bottom:none }
+.ficha .k{
+  font-family:'IBM Plex Mono',ui-monospace,monospace;
+  font-size:10.5px; letter-spacing:.05em; text-transform:uppercase;
+  color:rgba(245,245,247,.45); padding-top:3px;
+}
+.ficha .v{ color:#fff; min-width:0; overflow-wrap:anywhere }
+.ficha .row.nuevo .v{ color:var(--accent-soft) }
+
+.ticket{
+  border:1px solid rgba(122,208,198,.35);
+  background:rgba(122,208,198,.07);
+  border-radius:10px;
+  padding:14px 15px 15px;
+}
+.ticket-top{ display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; margin-bottom:9px }
+.ticket-id{
+  font-family:'IBM Plex Mono',ui-monospace,monospace;
+  font-size:11px; letter-spacing:.08em; color:var(--accent-soft);
+}
+.ticket-hora{
+  font-family:'IBM Plex Mono',ui-monospace,monospace;
+  font-size:10.5px; letter-spacing:.05em; color:rgba(245,245,247,.5); margin-left:auto;
+}
+.ticket h3{ margin:0 0 6px; font-size:15px; font-weight:600; color:#fff; letter-spacing:-.015em }
+.ticket p{ margin:0; font-size:13.5px; line-height:1.5; color:rgba(245,245,247,.75) }
+.ticket p + p{ margin-top:7px }
+
+.transcript{
+  max-height:186px; overflow-y:auto;
+  border:1px solid rgba(245,245,247,.13);
+  border-radius:8px;
+  padding:10px 12px;
+  background:rgba(0,0,0,.25);
+}
+.tline{
+  display:grid; grid-template-columns:44px 1fr; gap:0 8px;
+  font-size:12.5px; line-height:1.45;
+  padding:3px 0;
+  color:rgba(245,245,247,.8);
+}
+.tline .t{
+  font-family:'IBM Plex Mono',ui-monospace,monospace;
+  font-size:10px; color:rgba(245,245,247,.4); padding-top:2px;
+}
+.tline b{ font-weight:600; color:#fff }
+.tline.ag b{ color:var(--accent-soft) }
+
+.nota-eq{
+  margin-top:14px;
+  border-left:2px solid var(--accent-soft);
+  padding:2px 0 2px 12px;
+  font-size:13.5px; line-height:1.5;
+  color:rgba(245,245,247,.75);
+}
+.nota-eq b{ color:#fff; font-weight:600 }
+
+.contador{
+  display:flex; gap:18px; flex-wrap:wrap;
+  margin-top:16px; padding-top:12px;
+  border-top:1px solid rgba(245,245,247,.13);
+}
+.contador div{ min-width:0 }
+.contador .n{
+  display:block;
+  font-family:'IBM Plex Mono',ui-monospace,monospace;
+  font-size:20px; color:#fff; line-height:1.2;
+}
+.contador .l{
+  display:block;
+  font-family:'IBM Plex Mono',ui-monospace,monospace;
+  font-size:9.5px; letter-spacing:.12em; text-transform:uppercase;
+  color:rgba(245,245,247,.45); margin-top:2px;
+}
+.contador .aviso-c{
+  margin-left:auto; align-self:flex-end;
+  font-family:'IBM Plex Mono',ui-monospace,monospace;
+  font-size:9.5px; letter-spacing:.08em; color:rgba(245,245,247,.35);
+}
+
+/* ── Barra de control ────────────────────────────────────────────── */
+
+.control{
+  display:flex; align-items:center; gap:14px; flex-wrap:wrap;
+  margin:16px 0 0; padding:13px 0 0;
+  border-top:1px solid var(--line);
+}
+.reset{
+  font-family:'IBM Plex Mono',ui-monospace,monospace;
+  font-size:11px; letter-spacing:.1em; text-transform:uppercase;
+  color:var(--ink); background:transparent;
+  border:1px solid var(--line); border-radius:99px;
+  padding:7px 14px; cursor:pointer;
+  transition:border-color .15s,color .15s;
+}
+.reset:hover{ border-color:var(--accent); color:var(--accent) }
+.control p{ margin:0; font-size:13.5px; color:var(--faint) }
+
+/* ── Límites ─────────────────────────────────────────────────────── */
+
+.limites{ padding:34px 0 0 }
+.limites h2{
+  margin:0 0 6px; font-size:21px; font-weight:700; letter-spacing:-.03em;
+}
+.limites > p{ margin:0 0 16px; color:var(--muted); max-width:640px }
+.lims{ display:grid; grid-template-columns:repeat(3,1fr); gap:14px }
+.lim{
+  border:1px solid var(--line);
+  border-radius:12px;
+  background:var(--panel);
+  padding:15px 16px 16px;
+}
+.lim .n{
+  display:block;
+  font-family:'IBM Plex Mono',ui-monospace,monospace;
+  font-size:10.5px; letter-spacing:.1em; color:var(--accent); margin-bottom:8px;
+}
+.lim h3{ margin:0 0 5px; font-size:15px; font-weight:600; letter-spacing:-.02em }
+.lim p{ margin:0; font-size:14px; line-height:1.5; color:var(--muted) }
+
+/* ── Pie ─────────────────────────────────────────────────────────── */
+
+footer{
+  margin-top:34px;
+  border-top:1px solid var(--line);
+  padding:18px 0 42px;
+  display:flex; gap:14px; justify-content:space-between; flex-wrap:wrap;
+  font-family:'IBM Plex Mono',ui-monospace,monospace;
+  font-size:11px; letter-spacing:.05em; color:var(--faint);
+  line-height:1.6;
+}
+
+/* ── Responsivo ──────────────────────────────────────────────────── */
+
+@media (max-width:900px){
+  .grid{ grid-template-columns:1fr; gap:24px }
+  .lims{ grid-template-columns:1fr }
+  .log{ min-height:330px; height:330px; flex:0 0 auto }
+}
+
+@media (max-width:430px){
+  .wrap{ padding:0 14px }
+  .aviso{ font-size:12.5px; padding:10px 14px; text-align:left }
+  .intro{ padding:24px 0 20px }
+  .msg{ max-width:94% }
+  .log{ min-height:300px; height:300px; padding:14px 12px 6px }
+  .chat-canal{ display:none }
+  .compose{ padding:12px }
+  form.entrada button{ padding:11px 14px }
+  .ficha .row{ grid-template-columns:84px 1fr }
+  .eq-body{ padding:14px }
+  .eq-head{ padding:13px 14px }
+  .contador .aviso-c{ margin-left:0; width:100% }
+  footer span{ text-align:left !important }
+}
+
+@media (prefers-reduced-motion:reduce){
+  *{ animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important }
+  html{ scroll-behavior:auto }
+}
+</style>
+</head>
+<body>
+
+<div class="aviso">
+  <b>Demo &middot; datos de ejemplo.</b> Así se ve el agente trabajando. Los datos son simulados.
+  <span class="dot">&middot;</span> Distribuidora del Norte, Ferretería Aldama y Ana Ríos son nombres inventados para esta demo.
+</div>
+
+<div class="wrap">
+
+  <header class="top">
+    <div class="brandline">
+      <span class="wordmark">unattended<span>.io</span></span>
+      <span class="eyebrow">( support l1 )</span>
+    </div>
+
+    <div class="intro">
+      <h1>Las mismas cinco preguntas,<br>a las once de la noche.</h1>
+      <div class="rule"></div>
+      <p class="lead">A la izquierda, lo que ve el cliente. A la derecha, lo que le llega a la persona
+      del equipo cuando el agente se topa con algo que no le toca.</p>
+      <p>El agente contesta lo repetido —horarios, sucursales, estatus de un pedido, requisitos— sin
+      despertar a nadie. Cuando la pregunta se sale del guion, se detiene y la escala con todo el
+      contexto ya recogido. Escribe la pregunta que quieras: si no está en el guion, vas a ver el
+      escalamiento.</p>
+    </div>
+  </header>
+
+  <div class="grid">
+
+    <!-- ── Columna A: el cliente ──────────────────────────────── -->
+    <section>
+      <p class="col-label"><i></i> Lo que ve el cliente</p>
+
+      <div class="chat">
+        <div class="chat-head">
+          <div class="avatar mono" id="avatar">DN</div>
+          <div class="chat-who">
+            <b id="chatNombre">Distribuidora del Norte</b>
+            <span id="chatEstado">Agente automático &middot; en línea 24/7</span>
+          </div>
+          <span class="chat-canal mono">WhatsApp</span>
+        </div>
+
+        <div class="log" id="log" role="log" aria-live="polite" aria-label="Conversación con el agente"></div>
+
+        <div class="compose">
+          <p class="sug-label">Preguntas de ejemplo</p>
+          <div class="sugs" id="sugs"></div>
+          <form class="entrada" id="form" autocomplete="off">
+            <label for="entrada" class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Escribe una pregunta</label>
+            <input id="entrada" type="text" placeholder="Escribe tu propia pregunta…" maxlength="180">
+            <button type="submit" id="enviar">Enviar</button>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Columna B: el equipo ───────────────────────────────── -->
+    <section>
+      <p class="col-label b"><i></i> Lo que le llega a la persona</p>
+
+      <div class="equipo">
+        <div class="eq-head">
+          <div>
+            <h2>Bandeja del equipo</h2>
+            <p>Distribuidora del Norte &middot; atención a clientes</p>
+          </div>
+          <span class="pill" id="pill">Sin pendientes</span>
+        </div>
+
+        <div class="eq-body">
+          <div id="ticketZona"></div>
+
+          <div class="blk">
+            <p class="blk-t">Contexto que el agente ya recogió</p>
+            <div class="ficha" id="ficha"></div>
+          </div>
+
+          <div class="contador">
+            <div><span class="n mono" id="cAtendidas">0</span><span class="l">Resueltas por el agente</span></div>
+            <div><span class="n mono" id="cEscaladas">0</span><span class="l">Escaladas a una persona</span></div>
+            <span class="aviso-c">( contador de esta demo )</span>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div class="control">
+    <button type="button" class="reset" id="reset">Reiniciar la demo</button>
+    <p>La conversación arranca un martes a las 23:14. Nadie del equipo está despierto.</p>
+  </div>
+
+  <section class="limites">
+    <h2>Lo que este agente no hace</h2>
+    <p>Los límites no son letra chica. Están escritos en el guion desde el día uno, y son
+    exactamente lo que dispara el escalamiento.</p>
+    <div class="lims">
+      <div class="lim">
+        <span class="n">01</span>
+        <h3>No cotiza ni negocia</h3>
+        <p>Volumen, descuentos y condiciones de pago los ve una persona. El agente no inventa un
+        precio para salir del paso.</p>
+      </div>
+      <div class="lim">
+        <span class="n">02</span>
+        <h3>No toca un pedido ya surtido</h3>
+        <p>Faltantes, daños y devoluciones necesitan cotejar remisión firmada contra factura. Eso lo
+        revisa alguien con acceso al sistema.</p>
+      </div>
+      <div class="lim">
+        <span class="n">03</span>
+        <h3>No adivina lo que no está en el guion</h3>
+        <p>Si la pregunta se sale de lo que sabe, lo dice y escala. Prefiere pasar el caso a dar una
+        respuesta a medias.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <span>unattended.io &middot; Ciudad de México<br>Demo de producto — Support L1</span>
+    <span style="text-align:right">Datos, nombres, pedidos y horarios: inventados para esta demo.<br>Ninguna empresa real aparece aquí.</span>
+  </footer>
+
+</div>
+
+<script>
+(function(){
+  'use strict';
+
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  var log        = document.getElementById('log');
+  var ficha      = document.getElementById('ficha');
+  var ticketZona = document.getElementById('ticketZona');
+  var pill       = document.getElementById('pill');
+  var sugs       = document.getElementById('sugs');
+  var form       = document.getElementById('form');
+  var entrada    = document.getElementById('entrada');
+  var enviar     = document.getElementById('enviar');
+  var reset      = document.getElementById('reset');
+  var chatEstado = document.getElementById('chatEstado');
+  var chatNombre = document.getElementById('chatNombre');
+  var avatar     = document.getElementById('avatar');
+  var cAtendidas = document.getElementById('cAtendidas');
+  var cEscaladas = document.getElementById('cEscaladas');
+
+  // ── Estado ────────────────────────────────────────────────────
+  var S;
+  function estadoInicial(){
+    return {
+      minutos: 23*60 + 14,
+      transcript: [],
+      hechos: [],
+      atendidas: 0,
+      escaladas: 0,
+      escalado: false,
+      ticket: null,
+      ocupado: false
+    };
+  }
+
+  function hora(m){
+    var h = Math.floor(m/60) % 24, mm = m % 60;
+    return (h<10?'0':'')+h+':'+(mm<10?'0':'')+mm;
+  }
+
+  function normaliza(s){
+    return (s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+  }
+
+  // ── El guion ──────────────────────────────────────────────────
+  // Cinco preguntas repetidas. Todo lo que no cae aquí, se escala.
+
+  var GUION = [
+    {
+      id:'horario',
+      kw:['horario','horarios','hora','abren','abre','cierran','cierra','abierto','abiertos','sabado','domingo','atienden','festivo'],
+      tema:'Horarios de atención',
+      hechos:[['Tema','Horarios de sucursal']],
+      responde: function(){
+        return [
+          {p:'El sábado abrimos de 9:00 a 14:00. Entre semana, de 8:00 a 18:30. Domingo cerrado.'},
+          {p:'Mostrador y andén de carga tienen el mismo horario, así que si vas por producto voluminoso, llega antes de la última media hora.'},
+          {ejemplo:'horarios de ejemplo · demo'}
+        ];
+      }
+    },
+    {
+      id:'ubicacion',
+      kw:['donde','dónde','direccion','ubicacion','ubicados','sucursal','sucursales','llegar','mapa','estacionamiento','monterrey','guadalajara','queretaro','cdmx','ciudad'],
+      tema:'Ubicación de sucursal',
+      hechos:[['Tema','Ubicación de sucursal']],
+      responde: function(txt){
+        var n = normaliza(txt), ciudad = 'Guadalajara', dir = 'Calzada Independencia Norte 455, Col. Industrial';
+        if(n.indexOf('monterrey')>-1){ ciudad='Monterrey'; dir='Av. Ruiz Cortines 890, Col. Industrial'; }
+        else if(n.indexOf('cdmx')>-1 || n.indexOf('mexico')>-1 || n.indexOf('ciudad de mex')>-1){ ciudad='Ciudad de México'; dir='Eje 5 Sur 210, Col. Granjas'; }
+        return [
+          {p:'Sucursal ' + ciudad + ':'},
+          {dato: dir},
+          {p:'Andén de carga por la calle lateral y estacionamiento para clientes. Las otras dos sucursales son ' + (ciudad==='Monterrey'?'Guadalajara y Ciudad de México':(ciudad==='Guadalajara'?'Monterrey y Ciudad de México':'Monterrey y Guadalajara')) + '.'},
+          {ejemplo:'direcciones de ejemplo · demo'}
+        ];
+      }
+    },
+    {
+      id:'pedido',
+      kw:['pedido','orden','envio','envío','guia','guía','estatus','status','rastrear','salio','salió','llega','entrega','embarque','paqueteria','paquetería','pd'],
+      tema:'Estatus de pedido',
+      responde: function(txt){
+        var m = normaliza(txt).match(/pd-?\s?(\d{3,6})/);
+        var folio = m ? 'PD-' + m[1] : 'PD-40218';
+        this._folio = folio;
+        return [
+          {p:'El pedido ' + folio + ' salió ayer del CEDIS de Monterrey.'},
+          {dato: 'Paquetería Ruta 9 · guía R9-778452'},
+          {p:'Entrega estimada: jueves, entre 10:00 y 15:00. Va completo, sin partidas pendientes.'},
+          {ejemplo:'folio y guía de ejemplo · demo'}
+        ];
+      },
+      hechosDe: function(){
+        return [['Tema','Estatus de pedido'],['Pedido', this._folio || 'PD-40218'],['Embarque','Ruta 9 · R9-778452']];
+      }
+    },
+    {
+      id:'credito',
+      kw:['credito','crédito','requisitos','papeles','documentos','alta','cuenta','linea','línea','constancia','acta','referencias','abrir'],
+      tema:'Requisitos de crédito',
+      hechos:[['Tema','Alta de línea de crédito']],
+      responde: function(){
+        return [
+          {p:'Para abrir línea de crédito a 30 días piden cuatro cosas:'},
+          {dato: 'acta constitutiva · constancia de situación fiscal · comprobante de domicilio · 3 referencias comerciales'},
+          {p:'Se manda a crédito y cobranza y contestan en dos días hábiles. Si quieres, levanto la solicitud desde aquí y tú nada más subes los documentos.'},
+          {ejemplo:'requisitos de ejemplo · demo'}
+        ];
+      }
+    },
+    {
+      id:'factura',
+      kw:['factura','facturas','cfdi','xml','pdf','reenviar','reenvia','reenvía','manda','correo','comprobante','rfc'],
+      tema:'Reenvío de factura',
+      hechos:[['Tema','Reenvío de factura']],
+      responde: function(){
+        return [
+          {p:'Listo, te reenvié la factura del pedido PD-40218 al correo que tenemos registrado en la cuenta.'},
+          {dato: 'PDF y XML · compras@ferreteria-aldama.example'},
+          {p:'Si el correo cambió, dímelo y lo actualizo aquí mismo.'},
+          {ejemplo:'correo y folio de ejemplo · demo'}
+        ];
+      }
+    }
+  ];
+
+  // ── Lo que dispara el escalamiento ────────────────────────────
+
+  var DISPARADORES = [
+    {
+      id:'faltante',
+      kw:['faltan','faltante','faltaron','llegaron','llegó de menos','no llego','incompleto','completo','facturaron','cobraron','cajas','piezas de menos','diferencia','dañado','danado','roto','golpeado','devolucion','devolución','garantia','garantía','reclamo','reclamacion','reclamación','queja','equivocado','me mandaron','error'],
+      motivo:'Diferencia entre lo facturado y lo recibido',
+      dice:[
+        {p:'Esto no lo contesto yo.'},
+        {p:'Un faltante sobre un pedido ya facturado se revisa cotejando la remisión firmada contra la factura, y esa firma no está de mi lado.'},
+        {p:'Le paso tu caso a una persona con todo lo que ya me dijiste. No vas a tener que repetirlo.'}
+      ],
+      pendiente:'Cotejar remisión firmada contra factura y decidir si va nota de crédito o reposición.'
+    },
+    {
+      id:'cotizacion',
+      kw:['cotizar','cotizacion','cotización','descuento','mayoreo','volumen','precio','precios','costo','cuanto cuesta','cuánto cuesta','condiciones','negociar','licitacion','licitación','proyecto','obra'],
+      motivo:'Precio y volumen — el agente no cotiza',
+      dice:[
+        {p:'Esto no lo contesto yo.'},
+        {p:'Un volumen así lo cotiza ventas, con la disponibilidad real de almacén enfrente. Yo no invento un precio ni una condición de pago para salir del paso.'},
+        {p:'Te paso con una persona y le mando lo que ya llevamos.'}
+      ],
+      pendiente:'Armar cotización con disponibilidad de almacén y condiciones de pago.'
+    },
+    {
+      id:'persona',
+      kw:['persona','humano','humana','asesor','ejecutivo','gerente','encargado','hablar con alguien','me comunicas','llamada','llamar','me marcan'],
+      motivo:'El cliente pidió hablar con una persona',
+      dice:[
+        {p:'Va, sin problema.'},
+        {p:'Le paso la conversación completa a alguien del equipo para que no empieces de cero.'}
+      ],
+      pendiente:'Contactar al cliente. Pidió trato directo con una persona.'
+    }
+  ];
+
+  var FUERA_DE_GUION = {
+    id:'fuera',
+    motivo:'La pregunta se salió del guion del agente',
+    dice:[
+      {p:'Esta no la tengo.'},
+      {p:'Prefiero pasártela a una persona antes que darte una respuesta a medias y que la corrijamos mañana.'},
+      {p:'Le mando la conversación completa para que la lea antes de escribirte.'}
+    ],
+    pendiente:'Leer la pregunta del cliente y responderla. Si se repite, entra al guion del agente.'
+  };
+
+  // ── Sugerencias ───────────────────────────────────────────────
+
+  var SUGERENCIAS = [
+    '¿A qué hora abren el sábado?',
+    '¿Dónde está la sucursal de Guadalajara?',
+    '¿Ya salió mi pedido PD-40218?',
+    '¿Qué necesito para abrir crédito?',
+    'Me facturaron 10 cajas y llegaron 8',
+    'Quiero cotizar 200 piezas para una obra'
+  ];
+
+  // ── Pintado ───────────────────────────────────────────────────
+
+  function el(tag, cls, txt){
+    var n = document.createElement(tag);
+    if(cls) n.className = cls;
+    if(txt !== undefined && txt !== null) n.textContent = txt;
+    return n;
+  }
+
+  function pintaDia(){
+    log.appendChild(el('p','daymark mono','Hoy · martes · 23:14'));
+  }
+
+  function scrollLog(){ log.scrollTop = log.scrollHeight; }
+
+  function burbuja(quien, partes, t, nombre){
+    var wrap = el('div','msg ' + quien);
+    var b = el('div','bubble');
+    if(quien === 'persona' && nombre){
+      b.appendChild(el('span','quien mono', nombre));
+    }
+    partes.forEach(function(parte){
+      if(parte.p !== undefined)       b.appendChild(el('p', null, parte.p));
+      else if(parte.dato !== undefined)   b.appendChild(el('span','dato', parte.dato));
+      else if(parte.ejemplo !== undefined) b.appendChild(el('span','ejemplo', '( ' + parte.ejemplo + ' )'));
+    });
+    wrap.appendChild(b);
+    wrap.appendChild(el('span','stamp mono', t));
+    log.appendChild(wrap);
+    scrollLog();
+  }
+
+  function corte(txt){
+    var wrap = el('div','msg corte');
+    wrap.appendChild(el('div','corte-linea mono', txt));
+    log.appendChild(wrap);
+    scrollLog();
+  }
+
+  function planoTexto(partes){
+    return partes.map(function(p){
+      if(p.p !== undefined) return p.p;
+      if(p.dato !== undefined) return p.dato;
+      return '';
+    }).filter(Boolean).join(' ');
+  }
+
+  function registra(quien, texto, t){
+    S.transcript.push({quien:quien, texto:texto, t:t});
+    if(S.ticket) pintaTranscript();
+  }
+
+  // ── Ficha de contexto ─────────────────────────────────────────
+
+  function agregaHechos(pares){
+    pares.forEach(function(par){
+      var k = par[0], v = par[1], hallado = false;
+      for(var i=0;i<S.hechos.length;i++){
+        if(S.hechos[i].k === k){ S.hechos[i].v = v; S.hechos[i].nuevo = true; hallado = true; }
+      }
+      if(!hallado) S.hechos.push({k:k, v:v, nuevo:true});
+    });
+    pintaFicha();
+  }
+
+  function pintaFicha(){
+    ficha.textContent = '';
+    S.hechos.forEach(function(h){
+      var row = el('div','row' + (h.nuevo ? ' nuevo' : ''));
+      row.appendChild(el('span','k', h.k));
+      row.appendChild(el('span','v', h.v));
+      ficha.appendChild(row);
+      h.nuevo = false;
+    });
+  }
+
+  // ── Ticket ────────────────────────────────────────────────────
+
+  function abreTicket(){
+    var tk0 = S.ticket;
+    ticketZona.textContent = '';
+
+    var caja = el('div','blk');
+    caja.appendChild(el('p','blk-t','Pendiente para una persona'));
+
+    var tk = el('div','ticket');
+
+    var top = el('div','ticket-top');
+    top.appendChild(el('span','ticket-id mono','TICKET ' + tk0.id));
+    top.appendChild(el('span','ticket-hora mono','escalado ' + tk0.hora));
+    tk.appendChild(top);
+
+    tk.appendChild(el('h3', null, tk0.items[0].motivo));
+    tk.appendChild(el('p', null, 'Asignado a Ana Ríos — atención a clientes (persona ficticia). Le llega la conversación completa, no un resumen.'));
+    tk0.items.forEach(function(it, i){
+      tk.appendChild(el('p', null, (i === 0 ? 'Lo que falta: ' : 'También quedó abierto: ') + it.pendiente));
+    });
+
+    var tr = el('div','blk');
+    tr.appendChild(el('p','blk-t','Conversación completa, tal como llegó'));
+    var caja2 = el('div','transcript');
+    caja2.id = 'transcript';
+    tr.appendChild(caja2);
+
+    var nota = el('div','nota-eq');
+    var b = el('b', null, 'El cliente no repitió un solo dato.');
+    nota.appendChild(b);
+    nota.appendChild(document.createTextNode(' Ana abre el ticket a las 8:05 y ya tiene quién es, qué pedido, qué preguntó y qué le contestó el agente. Contesta una sola vez, sobre la misma conversación.'));
+
+    caja.appendChild(tk);
+    ticketZona.appendChild(caja);
+    ticketZona.appendChild(tr);
+    ticketZona.appendChild(nota);
+
+    pintaTranscript();
+
+    pill.textContent = '1 pendiente';
+    pill.className = 'pill alerta';
+
+    chatEstado.textContent = 'Ana Ríos · el agente sigue en línea';
+    chatNombre.textContent = 'Distribuidora del Norte';
+    avatar.textContent = 'AR';
+  }
+
+  function pintaTranscript(){
+    var caja = document.getElementById('transcript');
+    if(!caja) return;
+    caja.textContent = '';
+    S.transcript.forEach(function(m){
+      var esAg = m.quien === 'agente';
+      var line = el('div','tline' + (esAg ? ' ag' : ''));
+      line.appendChild(el('span','t', m.t));
+      var cuerpo = el('span');
+      cuerpo.appendChild(el('b', null, (esAg ? 'Agente' : 'Cliente') + ': '));
+      cuerpo.appendChild(document.createTextNode(m.texto));
+      line.appendChild(cuerpo);
+      caja.appendChild(line);
+    });
+    caja.scrollTop = caja.scrollHeight;
+  }
+
+  function pintaContadores(){
+    cAtendidas.textContent = String(S.atendidas);
+    cEscaladas.textContent = String(S.escaladas);
+  }
+
+  function estadoVacio(){
+    ticketZona.textContent = '';
+    var caja = el('div','blk');
+    var v = el('div','vacio');
+    v.appendChild(el('b', null, 'Nada que atender'));
+    v.appendChild(el('p', null, 'El agente está contestando solo. A esta hora no hay nadie del equipo conectado, y no hace falta.'));
+    caja.appendChild(v);
+    ticketZona.appendChild(caja);
+    pill.textContent = 'Sin pendientes';
+    pill.className = 'pill';
+  }
+
+  // ── Motor ─────────────────────────────────────────────────────
+
+  function puntua(txt, kws){
+    var n = ' ' + normaliza(txt) + ' ';
+    var p = 0;
+    kws.forEach(function(k){
+      var kn = normaliza(k);
+      if(kn.indexOf(' ') > -1){ if(n.indexOf(kn) > -1) p += 2; }
+      else if(new RegExp('(^|[^a-z0-9])' + kn + '([^a-z0-9]|$)').test(n)) p += 1;
+    });
+    return p;
+  }
+
+  function clasifica(txt){
+    var mejorD = null, mejorDP = 0;
+    DISPARADORES.forEach(function(d){
+      var p = puntua(txt, d.kw);
+      if(p > mejorDP){ mejorDP = p; mejorD = d; }
+    });
+
+    var mejorG = null, mejorGP = 0;
+    GUION.forEach(function(g){
+      var p = puntua(txt, g.kw);
+      if(p > mejorGP){ mejorGP = p; mejorG = g; }
+    });
+
+    // Un disparador siempre gana: la queja sobre una factura no es una
+    // pregunta sobre facturas.
+    if(mejorD && mejorDP >= mejorGP) return {tipo:'escala', dato:mejorD};
+    if(mejorG && mejorGP > 0)        return {tipo:'guion', dato:mejorG};
+    return {tipo:'escala', dato:FUERA_DE_GUION};
+  }
+
+  function bloquea(v){
+    S.ocupado = v;
+    enviar.disabled = v;
+    entrada.disabled = v;
+    Array.prototype.forEach.call(sugs.children, function(b){ b.disabled = v; });
+  }
+
+  function escribiendo(cb){
+    var wrap = el('div','msg agente');
+    var b = el('div','bubble');
+    var t = el('div','typing');
+    t.appendChild(el('i')); t.appendChild(el('i')); t.appendChild(el('i'));
+    b.appendChild(t);
+    wrap.appendChild(b);
+    log.appendChild(wrap);
+    scrollLog();
+    window.setTimeout(function(){
+      if(wrap.parentNode) wrap.parentNode.removeChild(wrap);
+      cb();
+    }, reduce ? 120 : 850);
+  }
+
+  function manda(texto){
+    if(S.ocupado) return;
+    texto = (texto || '').trim();
+    if(!texto) return;
+
+    bloquea(true);
+    S.minutos += 1;
+    var t = hora(S.minutos);
+
+    burbuja('cliente', [{p:texto}], t);
+    registra('cliente', texto, t);
+
+    var r = clasifica(texto);
+
+    escribiendo(function(){
+      var t2 = hora(S.minutos);
+
+      if(r.tipo === 'guion'){
+        var g = r.dato;
+        var partes = g.responde(texto);
+        burbuja('agente', partes, t2);
+        registra('agente', planoTexto(partes), t2);
+        agregaHechos(g.hechosDe ? g.hechosDe() : g.hechos);
+        if(!S.escalado){
+          agregaHechos([['Atendido por','Agente, sin persona']]);
+        }
+        S.atendidas += 1;
+        pintaContadores();
+        bloquea(false);
+        return;
+      }
+
+      // Escalamiento
+      var d = r.dato;
+      burbuja('agente', d.dice, t2);
+      registra('agente', planoTexto(d.dice), t2);
+
+      window.setTimeout(function(){
+        S.minutos += 1;
+        var t3 = hora(S.minutos);
+
+        if(!S.escalado){
+          S.escalado = true;
+          S.escaladas += 1;
+          corte('escalado a una persona · ' + t3);
+          agregaHechos([
+            ['Motivo', d.motivo],
+            ['Atendido por','Ana Ríos (persona)'],
+            ['Escalado', t3 + ', martes']
+          ]);
+          S.ticket = { id:'SOP-118', hora:t3, items:[{motivo:d.motivo, pendiente:d.pendiente}] };
+          abreTicket();
+          corte('miércoles · 08:05 · entra el equipo');
+          burbuja('persona', [
+            {p:'Buenos días. Soy Ana, de atención a clientes.'},
+            {p:'Ya leí toda la conversación de anoche, no me la cuentes otra vez. Lo estoy revisando y te escribo hoy mismo por aquí.'}
+          ], '08:05', 'Ana Ríos · atención a clientes');
+          S.minutos = 8*60 + 5;
+        } else {
+          S.escaladas += 1;
+          corte('agregado al mismo ticket · ' + t3);
+          agregaHechos([['Motivo', d.motivo]]);
+          S.ticket.items.push({motivo:d.motivo, pendiente:d.pendiente});
+          abreTicket();
+        }
+
+        pintaContadores();
+        if(window.innerWidth <= 900){
+          try{
+            document.querySelector('.equipo').scrollIntoView({behavior: reduce ? 'auto' : 'smooth', block:'start'});
+          }catch(e){
+            document.querySelector('.equipo').scrollIntoView();
+          }
+        }
+        bloquea(false);
+      }, reduce ? 120 : 700);
+    });
+  }
+
+  // ── Arranque ──────────────────────────────────────────────────
+
+  function siembra(){
+    log.textContent = '';
+    pintaDia();
+
+    var t1 = hora(S.minutos);
+    burbuja('cliente', [{p:'Buenas noches, ¿siguen abiertos?'}], t1);
+    registra('cliente', 'Buenas noches, ¿siguen abiertos?', t1);
+
+    var t2 = hora(S.minutos);
+    var partes = [
+      {p:'Buenas noches. El mostrador ya cerró, pero yo contesto a cualquier hora.'},
+      {p:'Te ubico por tu número: Ferretería Aldama, cuenta 3391. ¿Qué necesitas?'},
+      {ejemplo:'cliente y cuenta de ejemplo · demo'}
+    ];
+    burbuja('agente', partes, t2);
+    registra('agente', planoTexto(partes), t2);
+
+    agregaHechos([
+      ['Canal','WhatsApp'],
+      ['Cliente','Ferretería Aldama (ficticio)'],
+      ['Cuenta','3391'],
+      ['Entró','23:14, martes'],
+      ['Atendido por','Agente, sin persona']
+    ]);
+  }
+
+  function pintaSugerencias(){
+    sugs.textContent = '';
+    SUGERENCIAS.forEach(function(s){
+      var b = el('button','sug', s);
+      b.type = 'button';
+      b.addEventListener('click', function(){ manda(s); });
+      sugs.appendChild(b);
+    });
+  }
+
+  function arranca(){
+    S = estadoInicial();
+    chatEstado.textContent = 'Agente automático · en línea 24/7';
+    chatNombre.textContent = 'Distribuidora del Norte';
+    avatar.textContent = 'DN';
+    entrada.value = '';
+    estadoVacio();
+    ficha.textContent = '';
+    siembra();
+    pintaContadores();
+    bloquea(false);
+    log.scrollTop = 0;
+  }
+
+  form.addEventListener('submit', function(e){
+    e.preventDefault();
+    var v = entrada.value;
+    entrada.value = '';
+    manda(v);
+  });
+
+  reset.addEventListener('click', function(){ arranca(); });
+
+  pintaSugerencias();
+  arranca();
+})();
+</script>
+
+</body>
+</html>
