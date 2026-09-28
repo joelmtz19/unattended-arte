@@ -1,0 +1,5 @@
+# Las demos son para enseñárselas a un prospecto por link, no para que
+# aparezcan en búsquedas. Los datos son simulados, pero una demo suelta en
+# Google se lee como si fuera un producto en operación.
+User-agent: *
+Disallow: /demos/

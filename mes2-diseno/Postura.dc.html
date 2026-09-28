@@ -1,0 +1,76 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;700&family=IBM+Plex+Mono:wght@400&display=swap">
+  <style>
+    body { margin: 0; font-family: Archivo, Helvetica, Arial, sans-serif; }
+    a { color: #0f6862; } a:hover { color: #0b4f4a; }
+  </style>
+</helmet>
+
+<!--
+  Visual del post #5 de LinkedIn (jue 3-sep, pilar Postura).
+  El plan lo pide así: "íconos de canales apilados con una grieta en medio".
+
+  La grieta va dibujada, no insinuada: cuatro barras apiladas que deberían
+  formar un bloque sólido, partidas por una diagonal que las desalinea. Esa
+  desalineación ES el argumento — más canales encima de una base que no
+  sincroniza no suman, multiplican el desfase.
+
+  Formato 1200x1200: LinkedIn recorta a cuadrado en el feed y así no se pierde
+  nada. No lleva llamada a la acción: el post de texto la trae.
+-->
+<div style="width: 1200px; height: 1200px; box-sizing: border-box; background: #fbfbfd; color: #1d1d1f; padding: 100px; display: flex; flex-direction: column;">
+
+  <span style="font-family: 'IBM Plex Mono', monospace; font-size: 22px; letter-spacing: 0.16em; color: #6e6e73;">( postura )</span>
+
+  <div style="flex-grow: 1; display: flex; flex-direction: column; justify-content: center; gap: 56px;">
+
+    <h1 style="margin: 0; font-weight: 700; font-size: 88px; line-height: 1.05; letter-spacing: -0.04em; max-width: 15ch;">
+      más canales <span style="color: #0f6862;">≠</span> más sincronía.
+    </h1>
+
+    <svg width="620" height="300" viewBox="0 0 620 300" aria-hidden="true" style="display: block;">
+      <!-- Las cuatro barras. Las dos de abajo alineadas; las dos de arriba
+           corridas, como si la grieta las hubiera empujado. -->
+      <g stroke="#1d1d1f" stroke-width="2.5" fill="none">
+        <rect x="40"  y="212" width="330" height="52" rx="8"></rect>
+        <rect x="40"  y="146" width="330" height="52" rx="8"></rect>
+        <rect x="118" y="80"  width="330" height="52" rx="8"></rect>
+        <rect x="196" y="14"  width="330" height="52" rx="8"></rect>
+      </g>
+
+      <!-- Etiquetas de canal, en mono, dentro de cada barra -->
+      <g font-family="IBM Plex Mono, monospace" font-size="19" fill="#57575c">
+        <text x="62"  y="245">sitio directo</text>
+        <text x="62"  y="179">booking</text>
+        <text x="140" y="113">airbnb</text>
+        <text x="218" y="47">expedia</text>
+      </g>
+
+      <!-- La grieta: una diagonal de teal que cruza la pila donde empieza
+           el desfase. Va punteada porque no es una ruptura limpia, es una
+           que se abre de a poco. -->
+      <path d="M 30 208 L 560 6" stroke="#0f6862" stroke-width="4"
+            stroke-dasharray="14 11" stroke-linecap="round" fill="none"></path>
+    </svg>
+
+    <p style="margin: 0; font-size: 36px; line-height: 1.45; color: #57575c; max-width: 28ch;">
+      Sumar el quinto canal sobre cuatro que no se hablan entre sí no vende más. Vende lo mismo, dos veces.
+    </p>
+  </div>
+
+  <div style="display: flex; align-items: flex-end; justify-content: flex-end;">
+    <span style="font-weight: 700; font-size: 32px; letter-spacing: -0.03em;">unattended<span style="color: #0f6862;">|</span></span>
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>

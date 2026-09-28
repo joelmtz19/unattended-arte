@@ -15,3 +15,10 @@
 .DS_Store
 Thumbs.db
 desktop.ini
+
+.vercel
+
+# Los MP4 se regeneran desde spikes/contenido-remotion y solo hacen falta
+# en disco al momento de desplegar. En git serian 3.5 MB nuevos por cada
+# re-render, y la fuente de verdad es el codigo de Remotion, no el archivo.
+video/

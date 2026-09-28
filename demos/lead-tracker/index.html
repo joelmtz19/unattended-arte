@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta name="robots" content="noindex, nofollow">
+<meta name="googlebot" content="noindex, nofollow">
+
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lead Tracker — demo · unattended.io</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ══════════════════════════════════════════════════════════════════
+   Lead Tracker — demo de producto de unattended.io
+   Un solo archivo, sin dependencias, sin red (salvo las tipografías).
+   Paleta y tipografía tomadas de unattended-site/src/app/globals.css.
+   Todo lo que se ve en pantalla es un escenario inventado.
+   ══════════════════════════════════════════════════════════════════ */
+
+:root{
+  --bg:#fbfbfd;
+  --panel:#ffffff;
+  --ink:#1d1d1f;
+  --muted:#57575c;
+  --faint:#6e6e73;
+  --line:rgba(29,29,31,.11);
+  --line-soft:rgba(29,29,31,.07);
+  --accent:#0f6862;
+  --accent-soft:#7ad0c6;
+  --field:#101013;
+  --alarm:#8a3b34;
+  --mono:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --sans:'Archivo',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+}
+
+*{ box-sizing:border-box }
+html,body{ margin:0; padding:0 }
+
+body{
+  background:var(--bg);
+  color:var(--ink);
+  font-family:var(--sans);
+  font-size:15px;
+  line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+
+h1,h2,h3{ margin:0; font-weight:700; letter-spacing:-.035em }
+p{ margin:0 0 10px; color:var(--muted) }
+p:last-child{ margin-bottom:0 }
+strong,b{ color:inherit }
+
+.wrap{ max-width:1180px; margin:0 auto; padding:0 24px }
+
+/* ── Franja de aviso ─────────────────────────────────────────────── */
+.banner{
+  background:var(--field);
+  color:rgba(245,245,247,.72);
+  font-family:var(--mono);
+  font-size:12px;
+  letter-spacing:.02em;
+  padding:11px 0;
+}
+.banner b{ color:var(--accent-soft); font-weight:500 }
+
+/* ── Encabezado ──────────────────────────────────────────────────── */
+header{ border-bottom:1px solid var(--line); background:var(--panel) }
+header .wrap{ padding-top:22px; padding-bottom:22px }
+.brand{
+  font-family:var(--mono); font-size:12px; letter-spacing:.14em;
+  color:var(--faint); margin-bottom:16px;
+}
+.brand b{ color:var(--ink); font-weight:500 }
+.head-row{ display:flex; justify-content:space-between; align-items:flex-end; gap:24px; flex-wrap:wrap }
+h1{ font-size:30px; line-height:1.05 }
+.head-row p{ margin:8px 0 0; max-width:54ch; font-size:14px }
+.scene{
+  font-family:var(--mono); font-size:11.5px; color:var(--faint);
+  text-align:right; letter-spacing:.02em; line-height:1.8;
+}
+.scene b{ color:var(--accent); font-weight:500 }
+
+/* ── Controles ───────────────────────────────────────────────────── */
+.controls{ background:var(--panel); border-bottom:1px solid var(--line) }
+.controls .wrap{ padding-top:16px; padding-bottom:16px; display:flex; gap:12px 18px; align-items:center; flex-wrap:wrap }
+.ctl-label{
+  font-family:var(--mono); font-size:10.5px; letter-spacing:.14em;
+  text-transform:uppercase; color:var(--faint);
+}
+.chips{ display:flex; gap:8px; flex-wrap:wrap }
+.chip{
+  font-family:var(--mono); font-size:12px; letter-spacing:.02em;
+  border:1px solid var(--line); background:var(--bg); color:var(--muted);
+  border-radius:999px; padding:7px 14px; cursor:pointer;
+  transition:border-color .15s, color .15s, background .15s;
+}
+.chip:hover{ border-color:var(--accent-soft); color:var(--ink) }
+.chip[aria-pressed="true"]{ border-color:var(--accent); color:var(--accent); background:rgba(15,104,98,.07) }
+.btn{
+  font-family:var(--sans); font-size:14px; font-weight:600; letter-spacing:-.01em;
+  border:1px solid var(--accent); background:var(--accent); color:#fff;
+  border-radius:8px; padding:10px 18px; cursor:pointer; transition:opacity .15s;
+}
+.btn:hover{ opacity:.88 }
+.btn-ghost{ background:transparent; color:var(--muted); border-color:var(--line) }
+.btn-ghost:hover{ color:var(--ink); border-color:var(--faint); opacity:1 }
+.ctl-spacer{ margin-left:auto }
+
+/* ── Relojes ─────────────────────────────────────────────────────── */
+.clocks{ display:grid; grid-template-columns:1fr 1fr; gap:16px; margin:26px 0 0 }
+.clock{ border-radius:14px; padding:20px 22px 22px; border:1px solid var(--line); background:var(--panel) }
+.clock-a{ background:var(--field); border-color:var(--field); color:#f5f5f7 }
+.k{
+  font-family:var(--mono); font-size:10.5px; letter-spacing:.14em;
+  text-transform:uppercase; color:var(--faint); display:block; margin-bottom:14px;
+}
+.clock-a .k{ color:var(--accent-soft) }
+.num{
+  font-family:var(--mono); font-size:clamp(34px,5.6vw,54px); line-height:1;
+  letter-spacing:-.04em; font-weight:500; display:block;
+}
+.clock-a .num{ color:#fff }
+.clock-b .num{ color:var(--ink) }
+.clock-b.running .num,
+.clock-b.done .num{ color:var(--alarm) }
+.clock .note{ margin:14px 0 0; font-size:13px; line-height:1.5; min-height:4.5em }
+.clock-a .note{ color:rgba(245,245,247,.7) }
+.clock-a .note b{ color:#fff; font-weight:600 }
+.clock-b .note b{ color:var(--ink); font-weight:600 }
+
+/* ── Cuerpo ──────────────────────────────────────────────────────── */
+.main{ display:grid; grid-template-columns:1.35fr 1fr; gap:16px; margin-top:16px; align-items:start }
+.card{ border:1px solid var(--line); border-radius:14px; background:var(--panel); padding:18px 20px 20px }
+.card + .card{ margin-top:16px }
+
+/* Hilo */
+.thread{ display:flex; flex-direction:column; gap:12px; min-height:360px }
+.empty{
+  border:1px dashed var(--line); border-radius:10px; padding:20px;
+  color:var(--faint); font-size:13.5px; line-height:1.6; margin:auto 0;
+}
+.msg{ max-width:88%; border-radius:12px; padding:11px 14px; font-size:14px; line-height:1.5 }
+.msg .t{ display:block; font-family:var(--mono); font-size:10.5px; color:var(--faint); margin-bottom:5px; letter-spacing:.03em }
+.msg-lead{ align-self:flex-start; background:var(--bg); border:1px solid var(--line); color:var(--ink) }
+.msg-agent{ align-self:flex-end; background:rgba(15,104,98,.07); border:1px solid rgba(15,104,98,.18); color:var(--ink) }
+.msg-agent .t{ color:var(--accent) }
+.typing{ align-self:flex-end; font-family:var(--mono); font-size:11.5px; color:var(--accent); letter-spacing:.04em; padding:4px 2px }
+.appear{ animation:rise .28s ease-out both }
+@keyframes rise{ from{ opacity:0; transform:translateY(6px) } to{ opacity:1; transform:none } }
+
+/* Ficha */
+.row{ display:grid; grid-template-columns:1fr auto; gap:12px; padding:8px 0; border-bottom:1px solid var(--line-soft); align-items:baseline }
+.row:last-child{ border-bottom:0 }
+.row .rk{ font-size:13px; color:var(--faint) }
+.row .rv{ font-family:var(--mono); font-size:12.5px; color:var(--ink); text-align:right }
+.row .rv.pend{ color:rgba(29,29,31,.28) }
+.row .rv.gap{ color:var(--alarm) }
+.row.flash{ animation:flash .9s ease-out both }
+@keyframes flash{ 0%{ background:rgba(122,208,198,.4) } 100%{ background:transparent } }
+
+/* Bloques laterales */
+.stack{ list-style:none; margin:0; padding:0 }
+.stack li{
+  position:relative; padding:8px 0 8px 18px; font-size:13.5px; line-height:1.5;
+  color:var(--muted); border-bottom:1px solid var(--line-soft);
+}
+.stack li:last-child{ border-bottom:0 }
+.stack li::before{
+  content:''; position:absolute; left:0; top:16px;
+  width:6px; height:6px; border-radius:50%; background:var(--accent-soft);
+}
+.stack li b{ font-family:var(--mono); font-size:12px; font-weight:500; color:var(--accent) }
+.assign{ display:flex; gap:12px; align-items:flex-start }
+.ini{
+  flex:0 0 auto; width:38px; height:38px; border-radius:50%; background:var(--field);
+  color:var(--accent-soft); display:flex; align-items:center; justify-content:center;
+  font-family:var(--mono); font-size:12px;
+}
+.assign h3{ font-size:15px; margin-bottom:2px }
+.assign .rol{ font-family:var(--mono); font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--accent); margin-bottom:6px }
+.assign p{ font-size:13.5px }
+
+.limit{ border-left:2.5px solid var(--accent); background:rgba(15,104,98,.05); border-radius:0 14px 14px 0 }
+.limit .k{ color:var(--accent) }
+.limit ul{ margin:0; padding:0; list-style:none }
+.limit li{ font-size:13.5px; line-height:1.5; color:var(--muted); padding:8px 0 }
+.limit li + li{ border-top:1px solid var(--line-soft) }
+
+.hint{ font-size:13px; color:var(--faint); margin:0 }
+
+/* Bitácora */
+.log-card{ background:var(--field); border-color:var(--field) }
+.log-card .k{ color:var(--accent-soft) }
+.log{ font-family:var(--mono); font-size:12px; line-height:1.7; margin:0; max-height:190px; overflow-y:auto; color:rgba(245,245,247,.8) }
+.log .ln{ display:grid; grid-template-columns:74px 1fr; gap:14px; padding:1px 0 }
+.log .lt{ color:var(--accent-soft) }
+.log .empty-log{ color:rgba(245,245,247,.4) }
+
+/* Bandeja */
+.inbox{ margin-top:16px }
+.ibrow{ display:grid; grid-template-columns:70px 1fr auto auto; gap:14px; align-items:baseline; padding:9px 0; border-bottom:1px solid var(--line-soft) }
+.ibrow:last-child{ border-bottom:0 }
+.ibrow .h{ font-family:var(--mono); font-size:12px; color:var(--faint) }
+.ibrow .n{ font-size:13.5px; color:var(--ink) }
+.ibrow .n span{ color:var(--faint); font-size:12.5px }
+.ibrow .s{ font-family:var(--mono); font-size:12.5px; color:var(--accent) }
+.ibrow .st{ font-family:var(--mono); font-size:10.5px; color:var(--faint); text-transform:uppercase; letter-spacing:.08em }
+
+footer{ border-top:1px solid var(--line); margin-top:34px; padding:22px 0 44px }
+footer p{ font-size:12.5px; color:var(--faint); max-width:80ch }
+footer p + p{ margin-top:8px }
+
+/* ── Celular ─────────────────────────────────────────────────────── */
+@media (max-width:900px){
+  .wrap{ padding:0 16px }
+  h1{ font-size:24px }
+  .head-row{ align-items:flex-start }
+  .scene{ text-align:left }
+  .clocks{ grid-template-columns:1fr; gap:12px; margin-top:18px }
+  .main{ grid-template-columns:1fr }
+  .card{ padding:16px }
+  .msg{ max-width:94% }
+  .thread{ min-height:0 }
+  .clock .note{ min-height:0 }
+  .ctl-spacer{ margin-left:0; width:100% }
+  .chips{ width:100% }
+  .log .ln{ grid-template-columns:68px 1fr; gap:10px }
+  .ibrow{ grid-template-columns:64px 1fr auto; row-gap:2px }
+  .ibrow .st{ grid-column:2 / -1 }
+}
+@media (max-width:430px){
+  .btn{ flex:1 1 100%; text-align:center }
+  .chip{ padding:7px 11px; font-size:11.5px }
+}
+
+@media (prefers-reduced-motion:reduce){
+  *{ animation:none !important; transition:none !important }
+}
+</style>
+</head>
+<body>
+
+<div class="banner">
+  <div class="wrap"><b>Demo · datos de ejemplo.</b> Así se ve el agente trabajando. Los datos son simulados.</div>
+</div>
+
+<header>
+  <div class="wrap">
+    <div class="brand"><b>unattended</b>.io — producto</div>
+    <div class="head-row">
+      <div>
+        <h1>Lead Tracker</h1>
+        <p>Responde al primer contacto al instante, da seguimiento a quien no cierra y reactiva tu base fría. Ningún lead se enfría por falta de respuesta.</p>
+      </div>
+      <div class="scene">
+        Escenario simulado<br>
+        <b>Inmobiliaria Punto Norte</b> — empresa ficticia<br>
+        Martes, 22:47 · nadie de guardia
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="controls">
+  <div class="wrap">
+    <span class="ctl-label">Canal por donde entra</span>
+    <div class="chips" id="chips" role="group" aria-label="Canal de entrada del lead"></div>
+    <span class="ctl-spacer"></span>
+    <button class="btn" id="fire" type="button">Disparar lead nuevo</button>
+    <button class="btn btn-ghost" id="reset" type="button">Reiniciar</button>
+  </div>
+</div>
+
+<main class="wrap">
+
+  <section class="clocks">
+    <div class="clock clock-a">
+      <span class="k">Con Lead Tracker · primera respuesta</span>
+      <span class="num" id="clockA">—</span>
+      <p class="note" id="noteA">Elige un canal, dispara el lead y mira correr el reloj.</p>
+    </div>
+    <div class="clock clock-b" id="clockBox">
+      <span class="k">Sin agente · el mismo lead, hoy</span>
+      <span class="num" id="clockB">—</span>
+      <p class="note" id="noteB">El mensaje se queda en la bandeja hasta que alguien abre el celular.</p>
+    </div>
+  </section>
+
+  <section class="main">
+    <div>
+      <div class="card">
+        <span class="k">El hilo</span>
+        <div class="thread" id="thread" role="log" aria-live="polite" aria-label="Conversación del lead con el agente">
+          <div class="empty">Dispara el lead y no hagas nada más: nadie de la inmobiliaria está despierto. El reloj de arriba a la izquierda cuenta lo que tarda la primera respuesta. El de la derecha cuenta lo que tardaría hoy, sin agente.</div>
+        </div>
+      </div>
+      <div class="card log-card">
+        <span class="k">Bitácora del agente</span>
+        <div class="log" id="log"><span class="empty-log">— sin actividad —</span></div>
+      </div>
+    </div>
+
+    <div>
+      <div class="card">
+        <span class="k">Ficha del lead</span>
+        <div id="ficha"><p class="hint">Se llena sola con lo que el agente levanta en el hilo. Lo que el lead no dijo se queda vacío: no se inventa.</p></div>
+      </div>
+      <div class="card" id="assignCard" hidden>
+        <span class="k">Asignación</span>
+        <div class="assign">
+          <span class="ini" id="assignIni"></span>
+          <div>
+            <h3 id="assignName"></h3>
+            <div class="rol" id="assignRol"></div>
+            <p id="assignTxt"></p>
+          </div>
+        </div>
+      </div>
+      <div class="card" id="follyCard" hidden>
+        <span class="k">Seguimiento programado</span>
+        <ul class="stack" id="folly"></ul>
+      </div>
+      <div class="card limit" id="limitCard" hidden>
+        <span class="k">Lo que el agente no hizo</span>
+        <ul id="limitList"></ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="card inbox">
+    <span class="k">Bandeja de la noche · escenario simulado</span>
+    <div id="inbox"><p class="hint">Cada lead que dispares se queda aquí con el tiempo que tardó su primera respuesta.</p></div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>Los nombres de personas, la inmobiliaria, las propiedades, los horarios y los tiempos de esta pantalla son inventados para la demo. No corresponden a ninguna empresa ni a ninguna operación real.</p>
+    <p>unattended.io · Ciudad de México. El alcance de una implementación sale del diagnóstico, no de esta pantalla.</p>
+  </div>
+</footer>
+
+<script>
+(function(){
+  'use strict';
+
+  var $ = function(s){ return document.querySelector(s); };
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ── Los tres escenarios. Personas, propiedades y horas: inventadas. ── */
+
+  var LEADS = [
+    {
+      canal:'WhatsApp',
+      chip:'WhatsApp',
+      nombre:'Renata O.',
+      entra:'Martes 22:47',
+      replyMs:8000,
+      replySeg:'8.0 s',
+      sinMin:676,
+      conNota:'Primera respuesta a las <b>22:47:08</b>. Ocho segundos después de que entró el mensaje, sin nadie despierto en la oficina.',
+      sinNota:'Respuesta el <b>miércoles a las 10:03</b>, cuando la asesora abrió el celular. A las 23:10 el prospecto ya había agendado visita por otro anuncio.',
+      ficha:['Nombre','Canal','Propiedad','Uso','Crédito','Presupuesto','Visita','Estado'],
+      asignado:{ ini:'DR', nombre:'Daniela R.', rol:'Asesora de guardia · persona de ejemplo',
+        txt:'Le llega el hilo completo y la ficha, no un aviso de "tienes un lead". Si no lo retoma antes de las 09:00, el agente le insiste; a la segunda, avisa al gerente.' },
+      folly:[
+        ['Miércoles 09:00','aviso a la asesora si nadie retomó el hilo'],
+        ['Viernes 18:00','confirmación de la visita del sábado, al prospecto'],
+        ['+3 días sin visita','el agente vuelve a escribir una vez'],
+        ['Día 21 sin cierre','entra a la lista de reactivación']
+      ],
+      limites:[
+        'No negoció condiciones ni apartó la propiedad. Pasó la pregunta a la asesora tal cual la hizo Renata.',
+        'No preguntó presupuesto. A las 22:50 un desconocido aguanta tres preguntas; la cuarta la hace la persona, en la visita.',
+        'No confirmó que califique para el crédito. Dice qué se acepta y ahí se detiene.'
+      ],
+      steps:[
+        {t:150,  type:'field', k:'Nombre', v:'Renata O. (ejemplo)'},
+        {t:150,  type:'field', k:'Canal',  v:'WhatsApp · portal'},
+        {t:200,  type:'log', h:'22:47:00', txt:'lead nuevo · canal WhatsApp · origen: anuncio del portal'},
+        {t:350,  type:'msg', who:'lead', h:'22:47', txt:'Hola, vi el anuncio del depto de 2 recámaras en Del Valle. ¿Sigue disponible?'},
+        {t:1500, type:'log', h:'22:47:01', txt:'ningún asesor de guardia conectado a esta hora'},
+        {t:2100, type:'typing', on:true},
+        {t:3400, type:'log', h:'22:47:03', txt:'propiedad del anuncio: DV-214 · Del Valle · 2 rec · 78 m2'},
+        {t:3400, type:'field', k:'Propiedad', v:'DV-214 · Del Valle'},
+        {t:6000, type:'log', h:'22:47:06', txt:'inventario consultado: disponible'},
+        {t:8000, type:'typing', on:false},
+        {t:8000, type:'reply'},
+        {t:8000, type:'msg', who:'agente', h:'22:47:08', txt:'Sí, sigue disponible. Soy el asistente de Punto Norte y contesto a esta hora para que no te quedes esperando a mañana. Son 78 m², 2 recámaras y un cajón. ¿Lo buscas para vivir o para invertir?'},
+        {t:8000, type:'log', h:'22:47:08', txt:'primera respuesta enviada · 8.0 s'},
+        {t:9900, type:'msg', who:'lead', h:'22:48', txt:'Para vivir. Ando viendo dos o tres por esa zona.'},
+        {t:10100,type:'field', k:'Uso', v:'Para vivir'},
+        {t:11200,type:'msg', who:'agente', h:'22:48', txt:'Va. Una pregunta más y te dejo con la asesora: ¿ya tienes crédito autorizado o apenas lo estás moviendo?'},
+        {t:12600,type:'msg', who:'lead', h:'22:49', txt:'Estoy tramitando Infonavit.'},
+        {t:12800,type:'field', k:'Crédito', v:'Infonavit en trámite'},
+        {t:12900,type:'log', h:'22:49:04', txt:'ficha actualizada: uso, crédito'},
+        {t:13900,type:'msg', who:'agente', h:'22:49', txt:'Gracias. Para verlo tengo sábado a las 12:00 y a las 17:00. ¿Cuál te queda mejor?'},
+        {t:15100,type:'msg', who:'lead', h:'22:50', txt:'El sábado a las 12. Oye, ¿hay flexibilidad en las condiciones si cierro rápido?'},
+        {t:15300,type:'field', k:'Visita', v:'Sábado 12:00 (propuesta)'},
+        {t:16400,type:'msg', who:'agente', h:'22:50', txt:'Ahí me paro: no negocio condiciones ni aparto la propiedad. Eso lo ve Daniela, la asesora que te va a atender; le paso tu pregunta tal cual junto con lo que ya me contaste, para que no lo repitas.'},
+        {t:16500,type:'log', h:'22:50:12', txt:'pregunta fuera de alcance: condiciones comerciales → marcada para persona'},
+        {t:17300,type:'field', k:'Estado', v:'Asignada · requiere persona', gap:true},
+        {t:17300,type:'assign'},
+        {t:17400,type:'log', h:'22:50:20', txt:'asignada a Daniela R. · turno de guardia de la semana'},
+        {t:18200,type:'folly'},
+        {t:18300,type:'log', h:'22:50:21', txt:'seguimiento programado: 4 recordatorios · último a los 21 días'},
+        {t:19000,type:'msg', who:'agente', h:'22:50', txt:'Listo, Renata. El sábado a las 12 queda anotado como propuesta y Daniela te lo confirma mañana temprano. Que descanses.'},
+        {t:19800,type:'field', k:'Presupuesto', v:'sin dato', gap:true},
+        {t:19800,type:'limit'},
+        {t:19900,type:'log', h:'22:50:24', txt:'presupuesto: sin dato · lo levanta la asesora en la visita'},
+        {t:20200,type:'inbox', estado:'asignada'}
+      ]
+    },
+
+    {
+      canal:'Instagram',
+      chip:'Instagram DM',
+      nombre:'Iván P.',
+      entra:'Martes 23:12',
+      replyMs:6000,
+      replySeg:'6.0 s',
+      sinMin:628,
+      conNota:'Primera respuesta a las <b>23:12:06</b>. Y lo primero que dice es que no, porque el sí habría costado una cita perdida.',
+      sinNota:'Respuesta el <b>miércoles a las 09:40</b>, con un "sí, mándame tus datos" que no resuelve la pregunta que hizo.',
+      ficha:['Nombre','Canal','Interés','Crédito','Contacto','Presupuesto','Estado'],
+      asignado:{ ini:'BT', nombre:'Bruno T.', rol:'Asesor de cartera · persona de ejemplo',
+        txt:'Recibe el hilo con la restricción ya detectada: busca 2 recámaras con Infonavit, no el penthouse del anuncio. Sale con las opciones antes de las 10:00.' },
+      folly:[
+        ['Miércoles 09:00','el asesor le manda por mensaje las dos opciones que sí aceptan Infonavit'],
+        ['+2 días sin respuesta','el agente pregunta una vez si le sirvieron'],
+        ['Día 21 sin cierre','entra a la lista de reactivación']
+      ],
+      limites:[
+        'No forzó la propiedad del anuncio. Ese penthouse no acepta Infonavit y lo dijo en el primer mensaje, no en la cita.',
+        'No prometió que califica para el crédito. Explica qué se acepta; el trámite lo ve una persona.',
+        'No mandó él la lista de opciones. La manda el asesor, que es quien puede sostener lo que ofrece.'
+      ],
+      steps:[
+        {t:150,  type:'field', k:'Nombre', v:'Iván P. (ejemplo)'},
+        {t:150,  type:'field', k:'Canal',  v:'Instagram · DM'},
+        {t:200,  type:'log', h:'23:12:00', txt:'lead nuevo · canal Instagram · origen: video del penthouse NV-08'},
+        {t:350,  type:'msg', who:'lead', h:'23:12', txt:'Hola, vi el video del penthouse de Narvarte. ¿Aceptan Infonavit?'},
+        {t:1500, type:'log', h:'23:12:01', txt:'condiciones de NV-08: contado o crédito bancario · Infonavit no aplica'},
+        {t:2000, type:'typing', on:true},
+        {t:4200, type:'log', h:'23:12:04', txt:'inventario con Infonavit en la zona: 2 propiedades'},
+        {t:6000, type:'typing', on:false},
+        {t:6000, type:'reply'},
+        {t:6000, type:'msg', who:'agente', h:'23:12:06', txt:'Buenas noches. En ese penthouse no: el vendedor pide contado o crédito bancario, Infonavit no aplica ahí. Te lo digo hoy y no en la cita. ¿Quieres que te diga cuáles sí lo aceptan?'},
+        {t:6100, type:'log', h:'23:12:06', txt:'primera respuesta enviada · 6.0 s'},
+        {t:7800, type:'msg', who:'lead', h:'23:13', txt:'Sí, por favor. Busco 2 recámaras por Narvarte o Del Valle.'},
+        {t:8000, type:'field', k:'Interés', v:'2 rec · Narvarte / Del Valle'},
+        {t:8100, type:'field', k:'Crédito', v:'Infonavit'},
+        {t:9400, type:'msg', who:'agente', h:'23:13', txt:'Tengo dos que sí lo aceptan en esa zona. No te las paso yo: te las manda mañana Bruno, que lleva esa cartera y sí puede sostener lo que te diga. ¿Te llama o te escribe?'},
+        {t:10800,type:'msg', who:'lead', h:'23:14', txt:'Que me escriba, trabajo todo el día.'},
+        {t:11000,type:'field', k:'Contacto', v:'Mensaje, no llamada'},
+        {t:11100,type:'log', h:'23:14:02', txt:'ficha actualizada: interés, crédito, contacto preferido'},
+        {t:12100,type:'msg', who:'agente', h:'23:14', txt:'Anotado. Mañana antes de las 10 tienes mensaje suyo con las dos opciones.'},
+        {t:12900,type:'field', k:'Estado', v:'Asignada · requiere persona', gap:true},
+        {t:12900,type:'assign'},
+        {t:13000,type:'log', h:'23:14:10', txt:'asignada a Bruno T. · con la restricción de crédito marcada'},
+        {t:13800,type:'folly'},
+        {t:14400,type:'field', k:'Presupuesto', v:'sin dato', gap:true},
+        {t:14400,type:'limit'},
+        {t:14500,type:'log', h:'23:14:12', txt:'presupuesto: sin dato · no se pregunta antes de tener qué ofrecer'},
+        {t:14900,type:'inbox', estado:'asignada'}
+      ]
+    },
+
+    {
+      canal:'Formulario del sitio',
+      chip:'Formulario del sitio',
+      nombre:'Marisol C.',
+      entra:'Miércoles 06:20',
+      replyMs:9000,
+      replySeg:'9.0 s',
+      sinMin:235,
+      conNota:'Primera respuesta a las <b>06:20:09</b>. Este es el caso incómodo: no hay nada que venderle y el agente lo dice de una vez.',
+      sinNota:'Respuesta a las <b>10:15</b>, casi cuatro horas después. Aquí ni siquiera es de noche: es la mañana normal de una oficina ocupada.',
+      ficha:['Nombre','Canal','Interés','Zona','Disponibilidad','Presupuesto','Estado'],
+      asignado:{ ini:'DR', nombre:'Daniela R.', rol:'Asesora de guardia · persona de ejemplo',
+        txt:'Recibe un lead que hoy no se puede atender, con la razón escrita. Ella decide si vale la pena llamarle antes de que abra la etapa 3.' },
+      folly:[
+        ['Hoy 09:00','aviso a la asesora: prospecto sin inventario disponible'],
+        ['Al abrir la etapa 3','el agente le escribe el mismo día que se libera'],
+        ['+30 días','revisión: si sigue sin haber qué ofrecerle, se le dice']
+      ],
+      limites:[
+        'No inventó inventario. No quedan casas de 3 recámaras en esa etapa y lo dijo, aunque eso frene la conversación.',
+        'No apartó nada ni prometió lugar en la siguiente etapa. Eso lo confirma una persona, con plano y condiciones en la mano.',
+        'No preguntó presupuesto ni forma de pago. Sin nada que ofrecer, esas preguntas solo queman al prospecto.'
+      ],
+      steps:[
+        {t:150,  type:'field', k:'Nombre', v:'Marisol C. (ejemplo)'},
+        {t:150,  type:'field', k:'Canal',  v:'Formulario del sitio'},
+        {t:200,  type:'log', h:'06:20:00', txt:'lead nuevo · formulario del sitio · desarrollo Alamedas'},
+        {t:350,  type:'msg', who:'lead', h:'06:20', txt:'Vi el desarrollo Alamedas, etapa 2. ¿Quedan casas de 3 recámaras?'},
+        {t:1600, type:'field', k:'Interés', v:'Alamedas · 3 rec'},
+        {t:1700, type:'field', k:'Zona', v:'Alamedas (ficticio)'},
+        {t:2200, type:'typing', on:true},
+        {t:3200, type:'log', h:'06:20:03', txt:'inventario etapa 2 · 3 recámaras: 0 disponibles'},
+        {t:5400, type:'log', h:'06:20:05', txt:'etapa 3: sin plano ni condiciones cargadas · no se puede ofrecer'},
+        {t:7000, type:'field', k:'Disponibilidad', v:'Sin inventario', gap:true},
+        {t:9000, type:'typing', on:false},
+        {t:9000, type:'reply'},
+        {t:9000, type:'msg', who:'agente', h:'06:20:09', txt:'Buenos días, Marisol. En la etapa 2 ya no queda ninguna de 3 recámaras: se apartaron las últimas dos la semana pasada. La etapa 3 abre más adelante y todavía no tengo ni plano ni condiciones, así que no te voy a decir que sí para tenerte esperando.'},
+        {t:9100, type:'log', h:'06:20:09', txt:'primera respuesta enviada · 9.0 s · sin inventario que ofrecer'},
+        {t:10900,type:'msg', who:'lead', h:'06:22', txt:'¿Me pueden avisar cuando abra?'},
+        {t:12300,type:'msg', who:'agente', h:'06:22', txt:'Sí. Te anoto en la lista de la etapa 3 y le paso tu ficha a Daniela para que ella te confirme el aviso. Yo no puedo apartarte nada.'},
+        {t:13200,type:'field', k:'Estado', v:'Lista de espera · requiere persona', gap:true},
+        {t:13200,type:'assign'},
+        {t:13300,type:'log', h:'06:22:14', txt:'asignada a Daniela R. · motivo: sin inventario, decisión humana'},
+        {t:14100,type:'folly'},
+        {t:14800,type:'field', k:'Presupuesto', v:'sin dato', gap:true},
+        {t:14800,type:'limit'},
+        {t:15200,type:'inbox', estado:'en espera'}
+      ]
+    }
+  ];
+
+  /* ── Estado ── */
+  var idx = 0;
+  var timers = [];
+  var ticker = null;
+  var running = false;
+  var SIN_DUR = 13000;          // cuánto tarda, en tiempo real, el reloj "sin agente"
+  var TICK = reduce ? 250 : 60;
+
+  var elThread = $('#thread'), elLog = $('#log'), elFicha = $('#ficha'),
+      elInbox  = $('#inbox'),  elA   = $('#clockA'), elB    = $('#clockB'),
+      elNoteA  = $('#noteA'),  elNoteB = $('#noteB'), elBox  = $('#clockBox'),
+      elFire   = $('#fire');
+
+  /* ── Utilidades ── */
+  function el(tag, cls, txt){
+    var n = document.createElement(tag);
+    if(cls) n.className = cls;
+    if(txt !== undefined) n.textContent = txt;
+    return n;
+  }
+  function later(ms, fn){ timers.push(setTimeout(fn, ms)); }
+  function clearTimers(){
+    for(var i=0;i<timers.length;i++){ clearTimeout(timers[i]); }
+    timers = [];
+    if(ticker){ clearInterval(ticker); ticker = null; }
+  }
+  function fmtDur(min){
+    var h = Math.floor(min/60), m = min%60;
+    if(h === 0){ return m + ' min'; }
+    return h + ' h ' + m + ' min';
+  }
+
+  /* ── Chips de canal ── */
+  var elChips = $('#chips');
+  LEADS.forEach(function(lead, i){
+    var b = el('button','chip', lead.chip);
+    b.type = 'button';
+    b.setAttribute('aria-pressed', i === 0 ? 'true' : 'false');
+    b.addEventListener('click', function(){
+      idx = i;
+      Array.prototype.forEach.call(elChips.children, function(c, j){
+        c.setAttribute('aria-pressed', j === i ? 'true' : 'false');
+      });
+      resetScene();
+    });
+    elChips.appendChild(b);
+  });
+
+  /* ── Pintado ── */
+  function resetScene(){
+    clearTimers();
+    running = false;
+    elFire.disabled = false;
+    elThread.innerHTML = '';
+    var e = el('div','empty');
+    e.textContent = 'Dispara el lead y no hagas nada más: nadie de la inmobiliaria está despierto. El reloj de arriba a la izquierda cuenta lo que tarda la primera respuesta. El de la derecha cuenta lo que tardaría hoy, sin agente.';
+    elThread.appendChild(e);
+    elLog.innerHTML = '';
+    elLog.appendChild(el('span','empty-log','— sin actividad —'));
+    elFicha.innerHTML = '';
+    elFicha.appendChild(el('p','hint','Se llena sola con lo que el agente levanta en el hilo. Lo que el lead no dijo se queda vacío: no se inventa.'));
+    $('#assignCard').hidden = true;
+    $('#follyCard').hidden  = true;
+    $('#limitCard').hidden  = true;
+    elA.textContent = '—';
+    elB.textContent = '—';
+    elNoteA.textContent = 'Elige un canal, dispara el lead y mira correr el reloj.';
+    elNoteB.textContent = 'El mensaje se queda en la bandeja hasta que alguien abre el celular.';
+    elBox.classList.remove('running','done');
+  }
+
+  function buildFicha(lead){
+    elFicha.innerHTML = '';
+    lead.ficha.forEach(function(k){
+      var r = el('div','row');
+      r.dataset.k = k;
+      r.appendChild(el('span','rk', k));
+      var v = el('span','rv pend','—');
+      r.appendChild(v);
+      elFicha.appendChild(r);
+    });
+  }
+
+  function setField(k, v, gap){
+    var rows = elFicha.querySelectorAll('.row');
+    for(var i=0;i<rows.length;i++){
+      if(rows[i].dataset.k === k){
+        var val = rows[i].querySelector('.rv');
+        val.textContent = v;
+        val.className = 'rv' + (gap ? ' gap' : '');
+        rows[i].classList.remove('flash');
+        void rows[i].offsetWidth;
+        rows[i].classList.add('flash');
+        return;
+      }
+    }
+  }
+
+  function addLog(h, txt){
+    var first = elLog.querySelector('.empty-log');
+    if(first){ elLog.innerHTML = ''; }
+    var line = el('div','ln');
+    line.appendChild(el('span','lt', h));
+    line.appendChild(el('span','lx', txt));
+    elLog.appendChild(line);
+    elLog.scrollTop = elLog.scrollHeight;
+  }
+
+  function addMsg(who, h, txt){
+    var empty = elThread.querySelector('.empty');
+    if(empty){ elThread.removeChild(empty); }
+    var m = el('div','msg ' + (who === 'lead' ? 'msg-lead' : 'msg-agent') + ' appear');
+    var t = el('span','t', (who === 'lead' ? 'Prospecto · ' : 'Lead Tracker · ') + h);
+    m.appendChild(t);
+    m.appendChild(el('div', null, txt));
+    var typing = elThread.querySelector('.typing');
+    if(typing){ elThread.insertBefore(m, typing); } else { elThread.appendChild(m); }
+  }
+
+  function setTyping(on){
+    var typing = elThread.querySelector('.typing');
+    if(on && !typing){
+      var empty = elThread.querySelector('.empty');
+      if(empty){ elThread.removeChild(empty); }
+      elThread.appendChild(el('div','typing','el agente está redactando…'));
+    }
+    if(!on && typing){ elThread.removeChild(typing); }
+  }
+
+  function showAssign(lead){
+    $('#assignIni').textContent  = lead.asignado.ini;
+    $('#assignName').textContent = lead.asignado.nombre;
+    $('#assignRol').textContent  = lead.asignado.rol;
+    $('#assignTxt').textContent  = lead.asignado.txt;
+    $('#assignCard').hidden = false;
+  }
+
+  function showFolly(lead){
+    var ul = $('#folly');
+    ul.innerHTML = '';
+    lead.folly.forEach(function(row){
+      var li = el('li');
+      li.appendChild(el('b', null, row[0]));
+      li.appendChild(document.createTextNode(' — ' + row[1]));
+      ul.appendChild(li);
+    });
+    $('#follyCard').hidden = false;
+  }
+
+  function showLimit(lead){
+    var ul = $('#limitList');
+    ul.innerHTML = '';
+    lead.limites.forEach(function(t){ ul.appendChild(el('li', null, t)); });
+    $('#limitCard').hidden = false;
+  }
+
+  function addInbox(lead, estado){
+    var hint = elInbox.querySelector('.hint');
+    if(hint){ elInbox.innerHTML = ''; }
+    var r = el('div','ibrow');
+    r.appendChild(el('span','h', lead.entra.split(' ')[1]));
+    var n = el('span','n', lead.nombre + ' ');
+    n.appendChild(el('span', null, '· ' + lead.canal));
+    r.appendChild(n);
+    r.appendChild(el('span','s', lead.replySeg));
+    r.appendChild(el('span','st', estado));
+    elInbox.insertBefore(r, elInbox.firstChild);
+    while(elInbox.children.length > 6){ elInbox.removeChild(elInbox.lastChild); }
+  }
+
+  /* ── Los relojes ── */
+  function startClocks(lead){
+    var t0 = Date.now();
+    var stopped = false;
+    elBox.classList.add('running');
+    elBox.classList.remove('done');
+    elNoteA.innerHTML = 'Contando desde que entró el mensaje…';
+    elNoteB.innerHTML = 'Nadie lo ha visto todavía…';
+    ticker = setInterval(function(){
+      var e = Date.now() - t0;
+      if(!stopped){
+        var s = Math.min(e, lead.replyMs) / 1000;
+        elA.textContent = s.toFixed(1) + ' s';
+        if(e >= lead.replyMs){ stopped = true; elA.textContent = lead.replySeg; }
+      }
+      var p = Math.min(1, e / SIN_DUR);
+      elB.textContent = fmtDur(Math.round(lead.sinMin * p));
+      if(p >= 1){
+        elBox.classList.remove('running');
+        elBox.classList.add('done');
+        elNoteB.innerHTML = lead.sinNota;
+        clearInterval(ticker);
+        ticker = null;
+      }
+    }, TICK);
+  }
+
+  /* ── Correr el escenario ── */
+  function run(){
+    var lead = LEADS[idx];
+    resetScene();
+    running = true;
+    elFire.disabled = true;
+    elThread.innerHTML = '';
+    buildFicha(lead);
+    startClocks(lead);
+
+    lead.steps.forEach(function(st){
+      later(st.t, function(){
+        if(st.type === 'log')    { addLog(st.h, st.txt); }
+        if(st.type === 'msg')    { addMsg(st.who, st.h, st.txt); }
+        if(st.type === 'typing') { setTyping(st.on); }
+        if(st.type === 'field')  { setField(st.k, st.v, st.gap); }
+        if(st.type === 'assign') { showAssign(lead); }
+        if(st.type === 'folly')  { showFolly(lead); }
+        if(st.type === 'limit')  { showLimit(lead); }
+        if(st.type === 'inbox')  { addInbox(lead, st.estado); running = false; elFire.disabled = false; }
+        if(st.type === 'reply')  { elNoteA.innerHTML = lead.conNota; }
+      });
+    });
+  }
+
+  elFire.addEventListener('click', run);
+  $('#reset').addEventListener('click', function(){
+    resetScene();
+    elInbox.innerHTML = '';
+    elInbox.appendChild(el('p','hint','Cada lead que dispares se queda aquí con el tiempo que tardó su primera respuesta.'));
+  });
+
+  resetScene();
+})();
+</script>
+
+</body>
+</html>

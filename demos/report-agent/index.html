@@ -1,0 +1,1038 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta name="robots" content="noindex, nofollow">
+<meta name="googlebot" content="noindex, nofollow">
+
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>unattended.io — Report Agent (demo)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ══════════════════════════════════════════════════════════════════
+   Report Agent — demo de producto (datos simulados)
+   Paleta y tipografía tomadas de unattended-site/src/app/globals.css.
+   Un solo archivo, sin dependencias. Abre con doble clic.
+   ══════════════════════════════════════════════════════════════════ */
+
+:root{
+  --bg:#fbfbfd;
+  --panel:#ffffff;
+  --ink:#1d1d1f;
+  --muted:#57575c;
+  --faint:#6e6e73;
+  --line:rgba(29,29,31,.11);
+  --line-soft:rgba(29,29,31,.07);
+  --accent:#0f6862;
+  --accent-soft:#7ad0c6;
+  --accent-wash:rgba(15,104,98,.06);
+  --field:#101013;
+  --warn:#9a4f16;
+  --warn-wash:rgba(154,79,22,.07);
+  --warn-line:rgba(154,79,22,.28);
+  --mono:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --sans:'Archivo',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+}
+
+*{ box-sizing:border-box }
+html{ -webkit-text-size-adjust:100% }
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--ink);
+  font-family:var(--sans);
+  font-size:15px;
+  line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,h4{ margin:0; font-weight:700; letter-spacing:-.035em; line-height:1.12 }
+p{ margin:0 0 .9em; color:var(--muted) }
+p:last-child{ margin-bottom:0 }
+strong{ color:var(--ink); font-weight:600 }
+.mono{ font-family:var(--mono); font-variant-numeric:tabular-nums }
+.num{ font-family:var(--mono); font-variant-numeric:tabular-nums; letter-spacing:-.01em }
+
+/* ── Franja de demo ──────────────────────────────────────────────── */
+.strip{
+  position:sticky; top:0; z-index:50;
+  background:var(--field); color:#f2f2f4;
+  font-family:var(--mono); font-size:12px; letter-spacing:.01em;
+  padding:9px 20px; text-align:center;
+  border-bottom:1px solid rgba(255,255,255,.09);
+}
+.strip b{ color:var(--accent-soft); font-weight:600 }
+
+.wrap{ max-width:1180px; margin:0 auto; padding:0 20px 80px }
+
+/* ── Encabezado ──────────────────────────────────────────────────── */
+.hd{ padding:44px 0 30px; border-bottom:1px solid var(--line) }
+.brand{
+  display:flex; align-items:center; gap:9px;
+  font-family:var(--mono); font-size:13px; letter-spacing:.02em; color:var(--ink);
+  margin:0 0 22px;
+}
+.brand i{ width:9px; height:9px; border-radius:50%; background:var(--accent); display:block }
+.hd h1{ font-size:clamp(30px,6.2vw,46px); letter-spacing:-.045em; margin:0 0 6px }
+.hd .kicker{
+  font-family:var(--mono); font-size:11.5px; letter-spacing:.15em; text-transform:uppercase;
+  color:var(--accent); margin:0 0 10px;
+}
+.hd p.lead{ font-size:clamp(15px,2.6vw,18px); color:var(--ink); max-width:62ch; line-height:1.5 }
+
+.eyebrow{
+  display:block; font-family:var(--mono); font-size:11px;
+  letter-spacing:.15em; text-transform:uppercase; color:var(--faint);
+  margin:0 0 12px;
+}
+
+section{ padding:42px 0 0 }
+section > h2{ font-size:clamp(21px,4vw,28px); margin:0 0 10px }
+section > p.intro{ max-width:64ch; margin:0 0 24px }
+
+/* ── Antes: los tres archivos ────────────────────────────────────── */
+.files{ display:grid; grid-template-columns:repeat(3,1fr); gap:14px }
+.file{
+  background:var(--panel); border:1px solid var(--line); border-radius:12px;
+  padding:16px 16px 14px; min-width:0;
+  transition:border-color .18s ease, box-shadow .18s ease;
+}
+.file.on{ border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-wash) }
+.file-name{
+  font-family:var(--mono); font-size:12.5px; font-weight:600; color:var(--ink);
+  word-break:break-all; margin:0 0 3px;
+}
+.file-meta{ font-family:var(--mono); font-size:11px; color:var(--faint); margin:0 0 11px }
+.prev{
+  background:var(--field); border-radius:8px; padding:10px 11px;
+  overflow-x:auto; margin:0 0 11px;
+}
+.prev pre{
+  margin:0; font-family:var(--mono); font-size:10.5px; line-height:1.75;
+  color:#c9c9cf; white-space:pre; font-variant-numeric:tabular-nums;
+}
+.prev .h{ color:#7f7f88 }
+.prev .k{ color:var(--accent-soft) }
+.prev .w{ color:#d99b6a }
+.flaw{
+  font-size:12.5px; line-height:1.45; color:var(--muted);
+  border-left:2px solid var(--warn-line); padding-left:10px; margin:0;
+}
+.flaw b{ color:var(--warn); font-weight:600 }
+
+/* ── Barra de ejecución ──────────────────────────────────────────── */
+.runbar{
+  display:flex; align-items:center; gap:16px; flex-wrap:wrap;
+  background:var(--panel); border:1px solid var(--line); border-radius:12px;
+  padding:14px 16px; margin:0 0 14px;
+}
+.clock{
+  font-family:var(--mono); font-size:12px; color:var(--faint);
+  display:flex; align-items:center; gap:8px;
+}
+.clock b{ color:var(--ink); font-weight:600; font-variant-numeric:tabular-nums }
+button{ font-family:inherit; font-size:inherit }
+.btn{
+  appearance:none; border:0; border-radius:9px; cursor:pointer;
+  background:var(--accent); color:#fff; font-weight:600; font-size:14px;
+  padding:11px 20px; letter-spacing:-.01em;
+  transition:background .18s ease, transform .1s ease;
+}
+.btn:hover{ background:#0c534e }
+.btn:active{ transform:translateY(1px) }
+.btn.ghost{ background:transparent; color:var(--accent); box-shadow:inset 0 0 0 1px var(--line) }
+.btn.ghost:hover{ background:var(--accent-wash) }
+.btn[disabled]{ opacity:.45; cursor:default }
+.runbar .grow{ margin-left:auto; font-family:var(--mono); font-size:11.5px; color:var(--faint) }
+
+.term{
+  background:var(--field); border-radius:12px; padding:16px 18px;
+  font-family:var(--mono); font-size:12.5px; line-height:1.85; color:#c9c9cf;
+  min-height:64px; overflow-x:auto; font-variant-numeric:tabular-nums;
+}
+.term .ln{ display:flex; gap:14px; white-space:nowrap }
+.term .t{ color:#6f6f78; flex:none }
+.term .m{ color:#d5d5db }
+.term .ok .m{ color:var(--accent-soft) }
+.term .wa .m{ color:#e0a473 }
+.term .idle{ color:#6f6f78 }
+.term .cursor::after{
+  content:'▌'; color:var(--accent-soft); margin-left:2px;
+  animation:blink 1.05s steps(2,start) infinite;
+}
+@keyframes blink{ to{ visibility:hidden } }
+
+/* ── Tablero ─────────────────────────────────────────────────────── */
+.board{ display:grid; grid-template-columns:minmax(0,1fr) 356px; gap:22px; align-items:start }
+
+.alert{
+  border:1px solid var(--warn-line); background:var(--warn-wash);
+  border-radius:12px; padding:16px 18px; margin:0 0 18px;
+}
+.alert .eyebrow{ color:var(--warn); margin-bottom:8px }
+.alert h3{ font-size:19px; margin:0 0 7px }
+.alert p{ font-size:14px; margin-bottom:12px }
+.two{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:0 0 12px }
+.src{
+  background:var(--panel); border:1px solid var(--line); border-radius:9px; padding:11px 13px;
+}
+.src .lbl{ font-family:var(--mono); font-size:10.5px; color:var(--faint); word-break:break-all; display:block; margin:0 0 5px }
+.src .v{ font-family:var(--mono); font-size:19px; font-weight:600; font-variant-numeric:tabular-nums; letter-spacing:-.02em }
+.src .how{ font-size:11.5px; color:var(--faint); line-height:1.4; margin:5px 0 0; display:block }
+.gap{
+  display:flex; align-items:baseline; gap:10px; flex-wrap:wrap;
+  border-top:1px solid var(--warn-line); padding-top:11px; margin:0 0 11px;
+}
+.gap .g-l{ font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--warn) }
+.gap .g-v{ font-family:var(--mono); font-size:20px; font-weight:600; font-variant-numeric:tabular-nums; color:var(--warn) }
+.split{ margin:0; padding:0; list-style:none }
+.split li{
+  display:flex; gap:12px; align-items:baseline; font-size:13px; color:var(--muted);
+  padding:5px 0; border-bottom:1px solid var(--line-soft);
+}
+.split li:last-child{ border-bottom:0 }
+.split .amt{ font-family:var(--mono); font-variant-numeric:tabular-nums; color:var(--ink); font-weight:500; flex:none; width:104px; text-align:right }
+.verdict{
+  background:var(--panel); border:1px solid var(--line); border-radius:9px;
+  padding:12px 14px; margin:12px 0 0; font-size:13.5px; color:var(--muted); line-height:1.5;
+}
+.verdict b{ color:var(--ink) }
+
+/* KPIs */
+.kpis{ display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin:0 0 18px }
+.kpi{
+  appearance:none; text-align:left; cursor:pointer; font-family:inherit;
+  background:var(--panel); border:1px solid var(--line); border-radius:12px;
+  padding:14px 15px 13px; min-width:0;
+  transition:border-color .16s ease, box-shadow .16s ease, transform .1s ease;
+}
+.kpi:hover{ border-color:var(--accent-soft) }
+.kpi:active{ transform:translateY(1px) }
+.kpi.on{ border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-wash) }
+.kpi .k-l{ display:block; font-family:var(--mono); font-size:10.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--faint); margin:0 0 8px }
+.kpi .k-v{ display:block; font-family:var(--mono); font-size:clamp(19px,2.4vw,23px); font-weight:600; font-variant-numeric:tabular-nums; letter-spacing:-.03em; color:var(--ink) }
+.kpi .k-u{ display:block; font-family:var(--mono); font-size:10.5px; color:var(--faint); margin:5px 0 0 }
+.kpi .k-tag{
+  display:inline-flex; align-items:center; gap:5px; margin:8px 0 0;
+  font-family:var(--mono); font-size:10px; letter-spacing:.04em;
+  color:var(--accent); background:var(--accent-wash); border-radius:20px; padding:3px 8px;
+}
+.kpi .k-tag.warn{ color:var(--warn); background:var(--warn-wash) }
+
+/* Bloques de gráfica */
+.blk{
+  background:var(--panel); border:1px solid var(--line); border-radius:12px;
+  padding:17px 18px 15px; margin:0 0 14px;
+}
+.blk h3{ font-size:16px; margin:0 0 3px }
+.blk .sub{ font-family:var(--mono); font-size:11px; color:var(--faint); margin:0 0 16px }
+
+.bars{ display:grid; gap:9px }
+.bar{
+  appearance:none; border:0; background:transparent; cursor:pointer; font-family:inherit;
+  display:grid; grid-template-columns:118px minmax(0,1fr) 104px; align-items:center; gap:12px;
+  padding:5px 6px; border-radius:8px; text-align:left; width:100%;
+  transition:background .16s ease;
+}
+.bar:hover{ background:var(--accent-wash) }
+.bar.on{ background:var(--accent-wash); box-shadow:inset 0 0 0 1px var(--accent-soft) }
+.bar .b-l{ font-family:var(--mono); font-size:11.5px; color:var(--ink); overflow:hidden; text-overflow:ellipsis; white-space:nowrap }
+.bar .b-v{ font-family:var(--mono); font-size:12.5px; font-variant-numeric:tabular-nums; text-align:right; color:var(--ink) }
+.bar svg{ display:block; width:100%; height:12px }
+.bar.gapbar .b-l,.bar.gapbar .b-v{ color:var(--warn) }
+
+.legend{ display:flex; gap:16px; flex-wrap:wrap; font-family:var(--mono); font-size:11px; color:var(--faint); margin:0 0 12px }
+.legend span{ display:inline-flex; align-items:center; gap:6px }
+.legend i{ width:10px; height:10px; border-radius:2px; display:block }
+.wk-svg{ display:block; width:100%; height:auto }
+.wk-labels{ display:grid; grid-template-columns:repeat(5,1fr); gap:6px; margin:8px 0 0 }
+.wk-labels button{
+  appearance:none; border:0; background:transparent; cursor:pointer; font-family:var(--mono);
+  font-size:11px; color:var(--muted); padding:6px 2px; border-radius:7px; line-height:1.3;
+  transition:background .16s ease, color .16s ease;
+}
+.wk-labels button:hover{ background:var(--accent-wash); color:var(--ink) }
+.wk-labels button.on{ background:var(--accent-wash); color:var(--accent); font-weight:600 }
+.wk-labels b{ display:block; font-weight:600; font-size:12px; color:inherit }
+
+/* ── Panel de trazabilidad ───────────────────────────────────────── */
+.tp{
+  position:sticky; top:58px;
+  background:var(--panel); border:1px solid var(--line); border-radius:12px;
+  padding:17px 18px 16px; min-width:0;
+}
+.tp .eyebrow{ color:var(--accent) }
+.tp-empty{ font-size:13.5px; color:var(--muted); line-height:1.55 }
+.tp-empty b{ color:var(--ink) }
+.tp h3{ font-size:17px; margin:0 0 8px; letter-spacing:-.03em }
+.tp-val{ font-family:var(--mono); font-size:26px; font-weight:600; font-variant-numeric:tabular-nums; letter-spacing:-.035em; margin:0 0 3px }
+.tp-val small{ font-size:11px; font-weight:400; color:var(--faint); letter-spacing:.06em; margin-left:5px }
+.tp-val.warn{ color:var(--warn) }
+.tp-meta{ margin:14px 0 0; border-top:1px solid var(--line); padding-top:12px }
+.tp-r{ display:grid; grid-template-columns:74px minmax(0,1fr); gap:10px; padding:5px 0; align-items:baseline }
+.tp-r span{ font-family:var(--mono); font-size:10.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--faint) }
+.tp-r b{ font-family:var(--mono); font-size:12px; font-weight:500; color:var(--ink); word-break:break-word; line-height:1.5 }
+.tp-rule{
+  background:var(--field); color:#c9c9cf; border-radius:7px; padding:9px 11px;
+  font-family:var(--mono); font-size:11px; line-height:1.6; margin:12px 0 0;
+  overflow-x:auto; white-space:pre-wrap; word-break:break-word;
+}
+.tp-rule em{ color:var(--accent-soft); font-style:normal }
+.tp-sec{ font-family:var(--mono); font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--faint); margin:16px 0 7px }
+.tp-desg{ margin:0; padding:0; list-style:none }
+.tp-desg li{
+  display:flex; justify-content:space-between; gap:12px; font-size:12.5px; color:var(--muted);
+  padding:5px 0; border-bottom:1px solid var(--line-soft);
+}
+.tp-desg li:last-child{ border-bottom:0 }
+.tp-desg li.tot{ color:var(--ink); font-weight:600; border-top:1px solid var(--line); margin-top:2px; padding-top:7px }
+.tp-desg .n{ font-family:var(--mono); font-variant-numeric:tabular-nums; flex:none }
+.tp-tbl{ overflow-x:auto; margin:0 }
+table.rows{ border-collapse:collapse; width:100%; font-family:var(--mono); font-size:11px; font-variant-numeric:tabular-nums }
+table.rows th{
+  text-align:left; font-weight:500; color:var(--faint); letter-spacing:.05em; text-transform:uppercase;
+  font-size:9.5px; padding:0 10px 5px 0; border-bottom:1px solid var(--line); white-space:nowrap;
+}
+table.rows td{ padding:5px 10px 5px 0; color:var(--muted); border-bottom:1px solid var(--line-soft); white-space:nowrap }
+table.rows td:first-child{ color:var(--accent); font-weight:500 }
+table.rows td.r{ text-align:right; color:var(--ink) }
+table.rows td.neg{ color:var(--warn) }
+table.rows tr.flag td{ background:var(--warn-wash) }
+.tp-more{ font-family:var(--mono); font-size:10.5px; color:var(--faint); margin:8px 0 0 }
+.tp-note{
+  font-size:12.5px; line-height:1.5; color:var(--muted);
+  background:var(--accent-wash); border-radius:8px; padding:10px 12px; margin:14px 0 0;
+}
+.tp-note b{ color:var(--accent) }
+.tp-note.warn{ background:var(--warn-wash) }
+.tp-note.warn b{ color:var(--warn) }
+.tp-links{ display:flex; gap:8px; flex-wrap:wrap; margin:12px 0 0 }
+.tp-links button{
+  appearance:none; cursor:pointer; font-family:var(--mono); font-size:11px;
+  background:transparent; color:var(--accent); border:1px solid var(--line);
+  border-radius:20px; padding:5px 11px;
+}
+.tp-links button:hover{ background:var(--accent-wash); border-color:var(--accent-soft) }
+
+/* ── Revisión humana ─────────────────────────────────────────────── */
+.human{ border:1px solid var(--line); border-left:2.5px solid var(--warn); border-radius:0 12px 12px 0; background:var(--panel); padding:17px 18px }
+.human h3{ font-size:17px; margin:0 0 6px }
+.human > p{ font-size:13.5px }
+.hitem{
+  display:grid; grid-template-columns:minmax(0,1fr) auto; gap:12px; align-items:center;
+  padding:12px 0; border-bottom:1px solid var(--line-soft);
+}
+.hitem:last-child{ border-bottom:0; padding-bottom:0 }
+.hitem h4{ font-size:14px; margin:0 0 3px; font-weight:600; letter-spacing:-.02em }
+.hitem p{ font-size:12.5px; margin:0 }
+.hitem .amt{ font-family:var(--mono); font-size:13px; font-variant-numeric:tabular-nums; color:var(--warn); display:block; margin:0 0 5px }
+
+/* ── Correo ──────────────────────────────────────────────────────── */
+.mail{ background:var(--panel); border:1px solid var(--line); border-radius:12px; overflow:hidden }
+.mail-h{ border-bottom:1px solid var(--line); padding:14px 18px; font-family:var(--mono); font-size:11.5px; color:var(--faint) }
+.mail-h div{ padding:2px 0 }
+.mail-h b{ color:var(--ink); font-weight:500 }
+.mail-b{ padding:18px }
+.mail-b p{ font-size:14px }
+.mail-b .m-flag{
+  border-left:2px solid var(--warn); background:var(--warn-wash);
+  padding:10px 13px; border-radius:0 8px 8px 0; margin:0 0 14px; font-size:13.5px; color:var(--muted);
+}
+.mail-b .m-flag b{ color:var(--warn) }
+
+/* ── Pie ─────────────────────────────────────────────────────────── */
+.foot{ margin:44px 0 0; padding:20px 0 0; border-top:1px solid var(--line); font-family:var(--mono); font-size:11px; color:var(--faint); line-height:1.7 }
+
+[hidden]{ display:none !important }
+:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; border-radius:6px }
+
+/* ── Responsive ──────────────────────────────────────────────────── */
+@media (max-width:980px){
+  .board{ grid-template-columns:minmax(0,1fr) }
+  .tp{ position:static }
+  .kpis{ grid-template-columns:repeat(2,1fr) }
+  .files{ grid-template-columns:1fr }
+}
+@media (max-width:620px){
+  body{ font-size:14.5px }
+  .wrap{ padding:0 14px 56px }
+  .strip{ font-size:11px; padding:8px 12px; text-align:left; line-height:1.45 }
+  .hd{ padding:30px 0 22px }
+  section{ padding:32px 0 0 }
+  .two{ grid-template-columns:1fr }
+  .kpis{ grid-template-columns:1fr }
+  .bar{ grid-template-columns:minmax(0,1fr) auto; row-gap:5px; column-gap:10px }
+  .bar .b-l{ white-space:normal; overflow:visible; grid-column:1; grid-row:1 }
+  .bar .b-v{ font-size:12px; grid-column:2; grid-row:1 }
+  .bar > span:nth-child(2){ grid-column:1 / -1; grid-row:2 }
+  .term .ln{ white-space:normal }
+  .term .t{ min-width:62px }
+  .hitem{ grid-template-columns:1fr }
+  .runbar{ gap:10px }
+  .runbar .grow{ margin-left:0; flex-basis:100% }
+  .wk-labels button{ font-size:10px }
+  .tp-r{ grid-template-columns:1fr; gap:1px }
+}
+@media (prefers-reduced-motion:reduce){
+  *{ animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important }
+  .term .cursor::after{ content:'' }
+}
+</style>
+</head>
+<body>
+
+<div class="strip"><b>Demo · datos de ejemplo.</b> Así se ve el agente trabajando. Los datos son simulados.</div>
+
+<div class="wrap">
+
+  <header class="hd">
+    <div class="brand"><i></i>unattended.io</div>
+    <p class="kicker">Producto · Report Agent</p>
+    <h1>Report Agent</h1>
+    <p class="lead">Tres archivos que no cuadran entran el lunes a las 8:00. Sale un tablero
+    donde cada cifra dice de qué archivo y de qué renglón salió — y donde lo que no cuadra
+    queda marcado, no escondido.</p>
+  </header>
+
+  <!-- ══════════ ANTES ══════════ -->
+  <section id="antes">
+    <span class="eyebrow">( antes )</span>
+    <h2>Los tres archivos</h2>
+    <p class="intro">Esto es lo que hoy alguien cruza a mano cada lunes en una distribuidora de
+    ejemplo —<strong>Distribuidora del Norte</strong>, nombre ficticio—. Tres exportaciones, tres
+    formatos de fecha, y dos de ellas dicen cosas distintas sobre lo mismo.</p>
+
+    <div class="files">
+      <article class="file" id="f-erp">
+        <p class="file-name">ventas_erp_2026-07.csv</p>
+        <p class="file-meta">ERP · 1,284 renglones · exportado 01/08 06:02</p>
+        <div class="prev"><pre><span class="h">folio,fecha,canal,tipo_doc,importe_total</span>
+FAC-20418,<span class="k">2026-07-01</span>,MAYOREO,FAC,18420.00
+FAC-20419,<span class="k">2026-07-01</span>,MOSTRADOR,FAC,2140.50
+FAC-21044,2026-07-17,<span class="w">MOST-3</span>,FAC,4380.00
+NC-00931,2026-07-14,MAYOREO,<span class="w">NC</span>,-8910.00</pre></div>
+        <p class="flaw"><b>El detalle:</b> trae notas de crédito mezcladas con facturas y 14
+        renglones con un canal que no está en el catálogo.</p>
+      </article>
+
+      <article class="file" id="f-comis">
+        <p class="file-name">comisiones_julio.xlsx</p>
+        <p class="file-meta">Hoja "Comisiones" · capturada a mano · 96 renglones</p>
+        <div class="prev"><pre><span class="h">ASESOR        ZONA    VENTA_JULIO      %</span>
+R. Delgado    Norte      412,300.00   2.5
+M. Cárdenas   Centro     388,940.00   2.5
+...
+<span class="w">TOTAL (D98)            4,357,110.00</span></pre></div>
+        <p class="flaw"><b>El detalle:</b> el total de julio no es el mismo que el del ERP. La
+        fecha aquí es un texto: "julio 2026".</p>
+      </article>
+
+      <article class="file" id="f-banco">
+        <p class="file-name">depositos_banco_julio.csv</p>
+        <p class="file-meta">Layout bancario · 412 movimientos</p>
+        <div class="prev"><pre><span class="h">fecha,concepto,referencia,monto_abono</span>
+<span class="k">01/07/26</span>,SPEI RECIBIDO,FAC-20418,18420.00
+<span class="k">02/07/26</span>,SPEI RECIBIDO,FAC20419,2140.50
+03/07/26,<span class="w">DEP EFECTIVO SUC 41</span>,,7300.00
+06/07/26,<span class="w">PAGO CLIENTE</span>,,12480.00</pre></div>
+        <p class="flaw"><b>El detalle:</b> la referencia a veces trae el folio, a veces viene
+        vacía y a veces sin guion.</p>
+      </article>
+    </div>
+  </section>
+
+  <!-- ══════════ EL AGENTE CORRE ══════════ -->
+  <section id="correr">
+    <span class="eyebrow">( lunes 08:00 )</span>
+    <h2>El agente corre solo</h2>
+    <p class="intro">Nadie abre Excel. Esto es lo que pasa, en orden, y lo que el agente decide
+    <em>no</em> resolver por su cuenta.</p>
+
+    <div class="runbar">
+      <div class="clock">programado <b>lun · 08:00</b></div>
+      <button class="btn" id="btnRun" type="button">Correr el agente</button>
+      <button class="btn ghost" id="btnReset" type="button" hidden>Correr otra vez</button>
+      <span class="grow" id="runState">en espera</span>
+    </div>
+
+    <div class="term" id="log" role="log" aria-live="polite" aria-label="Bitácora del agente">
+      <span class="idle">$ report-agent --run distribuidora-del-norte<span class="cursor"></span></span>
+    </div>
+  </section>
+
+  <!-- ══════════ DESPUÉS ══════════ -->
+  <section id="despues" hidden>
+    <span class="eyebrow">( después )</span>
+    <h2>El tablero</h2>
+    <p class="intro">Cada cifra es un botón. Haz clic en cualquiera y el panel de trazabilidad
+    dice de qué archivo salió, con qué regla y en qué renglones — para que se pueda defender en
+    el comité, no nada más enseñar.</p>
+
+    <div class="board">
+      <div class="board-main">
+
+        <!-- El caso incómodo -->
+        <div class="alert" id="conflicto">
+          <span class="eyebrow">( no cuadra )</span>
+          <h3>Dos archivos, dos cifras de "ventas de julio"</h3>
+          <p>El agente no escogió una. Las pone lado a lado, explica la diferencia completa y
+          deja la decisión donde va.</p>
+
+          <div class="two">
+            <div class="src">
+              <span class="lbl">ventas_erp_2026-07.csv</span>
+              <span class="v">4,182,930.00</span>
+              <span class="how">SUMA de importe_total, facturas menos notas de crédito</span>
+            </div>
+            <div class="src">
+              <span class="lbl">comisiones_julio.xlsx · celda D98</span>
+              <span class="v">4,357,110.00</span>
+              <span class="how">Total capturado a mano por el área comercial</span>
+            </div>
+          </div>
+
+          <div class="gap">
+            <span class="g-l">diferencia</span>
+            <span class="g-v">174,180.00</span>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--faint)">MXN · y sí sale completa</span>
+          </div>
+
+          <ul class="split">
+            <li><span class="amt">62,180.00</span><span>9 notas de crédito que el ERP descuenta y la hoja no. Renglones 417, 502, 588, 611, 703, 844, 950, 1108 y 1240.</span></li>
+            <li><span class="amt">112,000.00</span><span>2 pedidos facturados el 3 de agosto (FAC-21701, FAC-21707) que la hoja contó en julio.</span></li>
+          </ul>
+
+          <p class="verdict"><b>Lo que el agente no hace:</b> escoger. El tablero muestra la cifra
+          del ERP porque es la que tiene renglón que enseñar, y la deja marcada. La pregunta de
+          fondo —<b>¿la comisión se paga sobre facturado neto o antes de notas de crédito?</b>— no
+          es un problema de tablero. Es una definición, y la firman ustedes.</p>
+        </div>
+
+        <!-- KPIs -->
+        <div class="kpis" id="kpis"></div>
+
+        <!-- Gráfica por canal -->
+        <div class="blk">
+          <h3>Facturado por canal</h3>
+          <p class="sub">julio 2026 · MXN · escenario simulado</p>
+          <div class="bars" id="bars"></div>
+        </div>
+
+        <!-- Gráfica semanal -->
+        <div class="blk">
+          <h3>Facturado y cobrado por semana</h3>
+          <p class="sub">julio 2026 · MXN · escala 0 – 1,200,000 · escenario simulado</p>
+          <div class="legend">
+            <span><i style="background:#0f6862"></i>facturado</span>
+            <span><i style="background:#7ad0c6"></i>cobrado y conciliado</span>
+          </div>
+          <div id="wkChart"></div>
+          <div class="wk-labels" id="wkLabels"></div>
+        </div>
+
+        <!-- Revisión humana -->
+        <div class="human">
+          <span class="eyebrow" style="color:var(--warn)">( lo que el agente no resolvió )</span>
+          <h3>Dos cosas se van a revisión humana</h3>
+          <p>Un agente que nunca falla en la demo es un folleto. Estas dos no las puede cerrar
+          solo, y en vez de repartirlas a ojo las deja apartadas y visibles.</p>
+
+          <div class="hitem">
+            <div>
+              <h4>23 depósitos sin referencia legible</h4>
+              <p>El concepto dice "DEP EFECTIVO SUC 41" o "PAGO CLIENTE". No hay folio.
+              Adivinar a qué factura corresponden movería la cobranza sin sustento.</p>
+            </div>
+            <div>
+              <span class="amt">118,640.00 MXN</span>
+              <button class="btn ghost" type="button" data-trace="sinref">Ver los 23</button>
+            </div>
+          </div>
+
+          <div class="hitem">
+            <div>
+              <h4>14 renglones con canal "MOST-3"</h4>
+              <p>Ese canal no existe en el catálogo. Probablemente es Mostrador, pero
+              "probablemente" no entra al tablero: quedan como sin clasificar.</p>
+            </div>
+            <div>
+              <span class="amt">61,240.00 MXN</span>
+              <button class="btn ghost" type="button" data-trace="canal-sin">Ver los 14</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Panel de trazabilidad -->
+      <aside class="tp" id="tp" aria-live="polite">
+        <span class="eyebrow">( de dónde salió )</span>
+        <p class="tp-empty" id="tpEmpty"><b>Haz clic en cualquier cifra del tablero.</b>
+        Aquí aparece el archivo, la regla y los renglones exactos que la produjeron. Ese es todo
+        el argumento: la cifra no viene de un tablero bonito, viene de un renglón que se puede
+        abrir.</p>
+        <div id="tpBody" hidden></div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ══════════ EL CORREO ══════════ -->
+  <section id="correo" hidden>
+    <span class="eyebrow">( 08:00:09 )</span>
+    <h2>Lo que llega al correo</h2>
+    <p class="intro">El tablero no sirve si nadie entra. Lo que llega es corto y lo primero que
+    dice es lo que no cuadró.</p>
+
+    <div class="mail">
+      <div class="mail-h">
+        <div><b>Para:</b> dirección comercial · ventas · administración</div>
+        <div><b>Asunto:</b> Reporte semanal — julio 2026 (ejemplo)</div>
+        <div><b>Enviado:</b> lunes 08:00:09</div>
+      </div>
+      <div class="mail-b">
+        <div class="m-flag"><b>Antes del tablero:</b> "ventas de julio" aparece con dos cifras
+        distintas — 4,182,930.00 en el ERP y 4,357,110.00 en la hoja de comisiones. La diferencia
+        es 174,180.00 y está explicada renglón por renglón. No la resolví yo.</div>
+        <p>Facturado neto <span class="num">4,182,930.00</span> · cobrado y conciliado
+        <span class="num">3,608,415.00</span> · por cobrar <span class="num">574,515.00</span>.
+        El canal de mayoreo puso el 53% del mes.</p>
+        <p>Quedan 23 depósitos (<span class="num">118,640.00</span>) y 14 renglones de venta
+        (<span class="num">61,240.00</span>) que no pude clasificar sin inventar. Están apartados
+        en el tablero, no repartidos.</p>
+        <p style="margin-bottom:0"><button class="btn ghost" type="button" id="btnBack">Abrir el tablero</button></p>
+      </div>
+    </div>
+  </section>
+
+  <p class="foot">
+    unattended.io · Demo del producto Report Agent.<br>
+    Todos los datos son simulados. <b>Distribuidora del Norte</b> es un nombre ficticio y no
+    corresponde a ninguna empresa. Las cifras son de un escenario de ejemplo, no resultados de
+    nadie.
+  </p>
+
+</div>
+
+<script>
+(function(){
+  'use strict';
+
+  var RM = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ── Formato ─────────────────────────────────────────────────── */
+  function money(n){
+    return n.toLocaleString('es-MX',{minimumFractionDigits:2, maximumFractionDigits:2});
+  }
+  function ent(n){ return n.toLocaleString('es-MX'); }
+
+  /* ── Datos del escenario (simulados) ─────────────────────────── */
+  var TOTAL_FACT = 4182930, TOTAL_COBR = 3608415;
+
+  var CANALES = [
+    {id:'canal-mayoreo',  nom:'Mayoreo',        v:2214600, r:318},
+    {id:'canal-mostrador',nom:'Mostrador',      v:1038750, r:602},
+    {id:'canal-distrib',  nom:'Distribuidores', v:675890,  r:149},
+    {id:'canal-ecom',     nom:'E-commerce',     v:192450,  r:201},
+    {id:'canal-sin',      nom:'Sin clasificar', v:61240,   r:14, gap:true}
+  ];
+
+  var SEMANAS = [
+    {id:'sem-1', nom:'S1', rango:'01–05 jul', f:742180,  c:685940, r:226},
+    {id:'sem-2', nom:'S2', rango:'06–12 jul', f:968340,  c:848120, r:298},
+    {id:'sem-3', nom:'S3', rango:'13–19 jul', f:1105220, c:962300, r:341},
+    {id:'sem-4', nom:'S4', rango:'20–26 jul', f:891760,  c:758415, r:271},
+    {id:'sem-5', nom:'S5', rango:'27–31 jul', f:475430,  c:353640, r:148}
+  ];
+
+  var KPIS = [
+    {id:'facturado', l:'Facturado neto', v:'4,182,930.00', u:'MXN · julio 2026', tag:'1,284 renglones'},
+    {id:'cobrado',   l:'Cobrado y conciliado', v:'3,608,415.00', u:'MXN · 389 de 412 depósitos', tag:'23 sin conciliar', warn:true},
+    {id:'porcobrar', l:'Por cobrar', v:'574,515.00', u:'MXN · al 31 de julio', tag:'cifra derivada'},
+    {id:'ticket',    l:'Ticket promedio', v:'3,280.73', u:'MXN · 1,275 facturas', tag:'cifra derivada'}
+  ];
+
+  /* ── Trazas ──────────────────────────────────────────────────── */
+  var COLS_ERP   = ['r.','folio','fecha','canal','doc','importe'];
+  var COLS_BANCO = ['r.','fecha','concepto','referencia','abono'];
+
+  var TRAZAS = {
+    facturado:{
+      tit:'Facturado neto de julio', val:'4,182,930.00', arch:['erp'],
+      meta:[['archivo','ventas_erp_2026-07.csv'],['columna','importe_total'],['renglones','2 – 1285 (1,284 en total)']],
+      regla:'SUMA(importe_total) donde tipo_doc = <em>FAC</em>\n  −  SUMA(importe_total) donde tipo_doc = <em>NC</em>',
+      desg:[['Facturas · 1,275 renglones','4,245,110.00'],['Notas de crédito · 9 renglones','−62,180.00'],['Neto','4,182,930.00',true]],
+      cols:COLS_ERP,
+      rows:[
+        ['2','FAC-20418','2026-07-01','MAYOREO','FAC','18,420.00'],
+        ['3','FAC-20419','2026-07-01','MOSTRADOR','FAC','2,140.50'],
+        ['417','NC-00931','2026-07-14','MAYOREO','NC','−8,910.00','neg'],
+        ['1285','FAC-21692','2026-07-31','ECOMMERCE','FAC','1,204.00']
+      ],
+      mas:'1,280 renglones más en el archivo',
+      nota:'Las 9 notas de crédito se restan, no se ignoran. Ese es exactamente el punto donde la hoja de comisiones se separa del ERP.',
+      warn:false
+    },
+    cobrado:{
+      tit:'Cobrado y conciliado', val:'3,608,415.00', arch:['banco','erp'],
+      meta:[['archivo','depositos_banco_julio.csv'],['columna','monto_abono'],['renglones','2 – 413 (412 movimientos)']],
+      regla:'SUMA(monto_abono) donde <em>referencia</em> hace match\n  contra un folio del ERP (con o sin guion)',
+      desg:[['Conciliados · 389 movimientos','3,608,415.00'],['Sin referencia legible · 23','118,640.00'],['Total depositado en julio','3,727,055.00',true]],
+      cols:COLS_BANCO,
+      rows:[
+        ['2','01/07/26','SPEI RECIBIDO','FAC-20418','18,420.00'],
+        ['3','02/07/26','SPEI RECIBIDO','FAC20419','2,140.50'],
+        ['4','03/07/26','DEP EFECTIVO SUC 41','—','7,300.00','flag'],
+        ['9','06/07/26','PAGO CLIENTE','—','12,480.00','flag']
+      ],
+      mas:'408 movimientos más en el archivo',
+      nota:'"FAC20419" sin guion sí concilia: la referencia se normaliza antes de cruzar. Los renglones marcados en ámbar no traen folio y no se adivinan.',
+      links:[['sinref','Ver los 23 sin conciliar']],
+      warn:false
+    },
+    porcobrar:{
+      tit:'Por cobrar al 31 de julio', val:'574,515.00', arch:['erp','banco'],
+      meta:[['archivos','ventas_erp_2026-07.csv + depositos_banco_julio.csv'],['origen','cifra derivada — no sale de un renglón']],
+      regla:'Facturado neto <em>4,182,930.00</em>\n  −  Cobrado conciliado <em>3,608,415.00</em>',
+      desg:[['Facturado neto (ERP)','4,182,930.00'],['Cobrado conciliado (banco)','−3,608,415.00'],['Por cobrar','574,515.00',true]],
+      nota:'Esta cifra no tiene renglón propio: sale de restar dos que sí lo tienen. Por eso el panel deja abrir las dos de abajo.',
+      links:[['facturado','Ver el facturado'],['cobrado','Ver el cobrado']],
+      warn:false
+    },
+    ticket:{
+      tit:'Ticket promedio', val:'3,280.73', arch:['erp'],
+      meta:[['archivo','ventas_erp_2026-07.csv'],['origen','cifra derivada']],
+      regla:'Facturado neto <em>4,182,930.00</em>\n  ÷  facturas <em>1,275</em>  (sin contar las 9 NC)',
+      desg:[['Renglones en el archivo','1,284'],['Notas de crédito excluidas del divisor','−9'],['Facturas','1,275',true]],
+      nota:'Si las notas de crédito entraran al divisor, el ticket bajaría a 3,257.73. Es la misma cifra con otra definición: por eso la definición se escribe, no se supone.',
+      warn:false
+    },
+    sinref:{
+      tit:'Depósitos sin referencia', val:'118,640.00', arch:['banco'], warn:true,
+      meta:[['archivo','depositos_banco_julio.csv'],['movimientos','23 de 412'],['estatus','revisión humana']],
+      regla:'Sin <em>referencia</em> que empate con un folio del ERP\n  →  no se aplica a ninguna factura',
+      cols:COLS_BANCO,
+      rows:[
+        ['4','03/07/26','DEP EFECTIVO SUC 41','—','7,300.00','flag'],
+        ['9','06/07/26','PAGO CLIENTE','—','12,480.00','flag'],
+        ['58','11/07/26','SPEI 7729 TRANSFER','—','24,900.00','flag'],
+        ['211','22/07/26','DEP EFECTIVO SUC 12','—','5,180.00','flag']
+      ],
+      mas:'19 movimientos más en la lista de revisión',
+      nota:'El dinero entró: está en el total depositado. Lo que no se sabe es de quién. Repartirlo a ojo cuadraría el tablero y descuadraría la cobranza.'
+    },
+    'canal-sin':{
+      tit:'Ventas sin clasificar', val:'61,240.00', arch:['erp'], warn:true,
+      meta:[['archivo','ventas_erp_2026-07.csv'],['columna','canal — valor "MOST-3"'],['renglones','14'],['estatus','revisión humana']],
+      regla:'canal = <em>MOST-3</em>, que no existe en el catálogo\n  →  no se asigna a ningún canal',
+      cols:COLS_ERP,
+      rows:[
+        ['1044','FAC-21044','2026-07-17','MOST-3','FAC','4,380.00','flag'],
+        ['1051','FAC-21051','2026-07-17','MOST-3','FAC','12,760.00','flag'],
+        ['1077','FAC-21063','2026-07-18','MOST-3','FAC','3,910.00','flag'],
+        ['1102','FAC-21088','2026-07-20','MOST-3','FAC','8,240.00','flag']
+      ],
+      mas:'10 renglones más con el mismo canal',
+      nota:'Todos son del 17 al 20 de julio: huele a una caja nueva que se dio de alta en el punto de venta y no en el catálogo. El agente lo señala; darla de alta es de una persona.'
+    }
+  };
+
+  /* Trazas por canal */
+  var CANAL_ROWS = {
+    'canal-mayoreo':[
+      ['2','FAC-20418','2026-07-01','MAYOREO','FAC','18,420.00'],
+      ['64','FAC-20533','2026-07-08','MAYOREO','FAC','46,900.00'],
+      ['417','NC-00931','2026-07-14','MAYOREO','NC','−8,910.00','neg']
+    ],
+    'canal-mostrador':[
+      ['3','FAC-20419','2026-07-01','MOSTRADOR','FAC','2,140.50'],
+      ['88','FAC-20601','2026-07-09','MOSTRADOR','FAC','1,865.00'],
+      ['940','FAC-21310','2026-07-24','MOSTRADOR','FAC','3,420.00']
+    ],
+    'canal-distrib':[
+      ['31','FAC-20472','2026-07-03','DISTRIBUIDORES','FAC','9,780.00'],
+      ['512','FAC-21002','2026-07-16','DISTRIBUIDORES','FAC','14,250.00'],
+      ['1180','FAC-21540','2026-07-29','DISTRIBUIDORES','FAC','6,905.00']
+    ],
+    'canal-ecom':[
+      ['77','FAC-20588','2026-07-08','ECOMMERCE','FAC','980.00'],
+      ['655','FAC-21120','2026-07-21','ECOMMERCE','FAC','1,450.00'],
+      ['1285','FAC-21692','2026-07-31','ECOMMERCE','FAC','1,204.00']
+    ]
+  };
+  CANALES.forEach(function(c){
+    if(c.id === 'canal-sin') return;
+    TRAZAS[c.id] = {
+      tit:'Canal ' + c.nom, val:money(c.v), arch:['erp'],
+      meta:[['archivo','ventas_erp_2026-07.csv'],['columna','canal + importe_total'],['renglones',ent(c.r) + ' del archivo']],
+      regla:'SUMA(importe_total) donde canal = <em>' + c.nom.toUpperCase() + '</em>\n  (facturas menos notas de crédito del mismo canal)',
+      desg:[['Importe del canal',money(c.v)],['Parte del facturado neto',(c.v/TOTAL_FACT*100).toFixed(1) + '%',true]],
+      cols:COLS_ERP, rows:CANAL_ROWS[c.id], mas:ent(c.r - 3) + ' renglones más de este canal',
+      warn:false
+    };
+  });
+
+  /* Trazas por semana */
+  var SEM_ROWS = {
+    'sem-1':[['2','FAC-20418','2026-07-01','MAYOREO','FAC','18,420.00'],['31','FAC-20472','2026-07-03','DISTRIBUIDORES','FAC','9,780.00'],['198','FAC-20510','2026-07-05','MOSTRADOR','FAC','2,310.00']],
+    'sem-2':[['205','FAC-20521','2026-07-06','MAYOREO','FAC','31,200.00'],['417','NC-00931','2026-07-14','MAYOREO','NC','−8,910.00','neg'],['498','FAC-20844','2026-07-12','MOSTRADOR','FAC','1,740.00']],
+    'sem-3':[['512','FAC-21002','2026-07-16','DISTRIBUIDORES','FAC','14,250.00'],['1044','FAC-21044','2026-07-17','MOST-3','FAC','4,380.00','flag'],['820','FAC-21095','2026-07-19','MAYOREO','FAC','52,400.00']],
+    'sem-4':[['866','FAC-21140','2026-07-20','MAYOREO','FAC','27,650.00'],['940','FAC-21310','2026-07-24','MOSTRADOR','FAC','3,420.00'],['1102','FAC-21402','2026-07-26','ECOMMERCE','FAC','1,120.00']],
+    'sem-5':[['1140','FAC-21455','2026-07-27','MAYOREO','FAC','19,880.00'],['1180','FAC-21540','2026-07-29','DISTRIBUIDORES','FAC','6,905.00'],['1285','FAC-21692','2026-07-31','ECOMMERCE','FAC','1,204.00']]
+  };
+  SEMANAS.forEach(function(s){
+    TRAZAS[s.id] = {
+      tit:'Semana ' + s.nom.slice(1) + ' · ' + s.rango, val:money(s.f), arch:['erp','banco'],
+      meta:[['archivos','ventas_erp_2026-07.csv + depositos_banco_julio.csv'],['rango',s.rango + ' de 2026'],['renglones',ent(s.r) + ' del ERP']],
+      regla:'SUMA(importe_total) con fecha dentro de <em>' + s.rango + '</em>\n  y el cobrado del mismo rango, ya conciliado',
+      desg:[['Facturado neto',money(s.f)],['Cobrado y conciliado',money(s.c)],['Diferencia de la semana',money(s.f - s.c),true]],
+      cols:COLS_ERP, rows:SEM_ROWS[s.id], mas:ent(s.r - 3) + ' renglones más en la semana',
+      nota:'El cobrado de una semana no es el cobro de lo facturado esa semana: es lo que entró al banco en esos días. Son dos preguntas distintas y el tablero no las mezcla.',
+      warn:false
+    };
+  });
+
+  /* ── Bitácora ────────────────────────────────────────────────── */
+  var PASOS = [
+    ['08:00:00','Leo ventas_erp_2026-07.csv — 1,284 renglones',''],
+    ['08:00:01','Leo comisiones_julio.xlsx, hoja "Comisiones" — 96 renglones',''],
+    ['08:00:01','Leo depositos_banco_julio.csv — 412 movimientos',''],
+    ['08:00:02','Normalizo fechas: tres formatos distintos en tres archivos',''],
+    ['08:00:03','Separo 9 notas de crédito de 1,275 facturas',''],
+    ['08:00:04','Cruzo depósitos contra folios por referencia — 389 de 412','ok'],
+    ['08:00:05','23 depósitos sin referencia legible → revisión humana','wa'],
+    ['08:00:06','14 renglones con canal "MOST-3", fuera del catálogo → sin clasificar','wa'],
+    ['08:00:07','Ventas de julio: ERP 4,182,930.00 · hoja de comisiones 4,357,110.00','wa'],
+    ['08:00:07','No coinciden. No elijo. Lo marco y explico la diferencia completa.','wa'],
+    ['08:00:08','Armo el tablero: cada cifra guarda archivo, regla y renglón',''],
+    ['08:00:09','Listo. Reporte enviado a 3 destinatarios — 9 segundos.','ok']
+  ];
+
+  var $ = function(s){ return document.querySelector(s); };
+  var log = $('#log'), btnRun = $('#btnRun'), btnReset = $('#btnReset'), runState = $('#runState');
+  var despues = $('#despues'), correo = $('#correo');
+  var timers = [], corriendo = false, armado = false;
+
+  function limpiaTimers(){ timers.forEach(clearTimeout); timers = []; }
+
+  function pintaPaso(p){
+    var ln = document.createElement('div');
+    ln.className = 'ln ' + (p[2] || '');
+    var t = document.createElement('span'); t.className = 't'; t.textContent = p[0];
+    var m = document.createElement('span'); m.className = 'm'; m.textContent = p[1];
+    ln.appendChild(t); ln.appendChild(m);
+    log.appendChild(ln);
+    log.scrollTop = log.scrollHeight;
+  }
+
+  function revelaTablero(){
+    despues.hidden = false;
+    correo.hidden = false;
+    runState.textContent = 'terminado · 08:00:09';
+    btnReset.hidden = false;
+    btnRun.disabled = false;
+    corriendo = false;
+    if(!armado){ armaTablero(); armado = true; }
+  }
+
+  function correr(){
+    if(corriendo) return;
+    corriendo = true;
+    limpiaTimers();
+    log.innerHTML = '';
+    despues.hidden = true;
+    correo.hidden = true;
+    btnReset.hidden = true;
+    btnRun.disabled = true;
+    runState.textContent = 'corriendo…';
+    cierraTraza();
+
+    if(RM){
+      PASOS.forEach(pintaPaso);
+      revelaTablero();
+      return;
+    }
+    PASOS.forEach(function(p, i){
+      timers.push(setTimeout(function(){ pintaPaso(p); }, 260 * (i + 1)));
+    });
+    timers.push(setTimeout(revelaTablero, 260 * (PASOS.length + 1)));
+  }
+
+  btnRun.addEventListener('click', correr);
+  btnReset.addEventListener('click', function(){
+    correr();
+    document.getElementById('correr').scrollIntoView({behavior: RM ? 'auto' : 'smooth', block:'start'});
+  });
+
+  /* ── Tablero ─────────────────────────────────────────────────── */
+  function armaTablero(){
+    /* KPIs */
+    var cont = $('#kpis');
+    KPIS.forEach(function(k){
+      var b = document.createElement('button');
+      b.type = 'button'; b.className = 'kpi'; b.setAttribute('data-trace', k.id);
+      b.innerHTML = '<span class="k-l">' + k.l + '</span>' +
+                    '<span class="k-v">' + k.v + '</span>' +
+                    '<span class="k-u">' + k.u + '</span>' +
+                    '<span class="k-tag' + (k.warn ? ' warn' : '') + '">' + k.tag + '</span>';
+      cont.appendChild(b);
+    });
+
+    /* Barras por canal */
+    var maxC = Math.max.apply(null, CANALES.map(function(c){ return c.v; }));
+    var bars = $('#bars');
+    CANALES.forEach(function(c){
+      var pct = c.v / maxC * 100;
+      var fill = c.gap ? 'var(--warn)' : 'var(--accent)';
+      var op = c.gap ? '.55' : '1';
+      var b = document.createElement('button');
+      b.type = 'button'; b.className = 'bar' + (c.gap ? ' gapbar' : '');
+      b.setAttribute('data-trace', c.id);
+      b.innerHTML =
+        '<span class="b-l">' + c.nom + '</span>' +
+        '<span><svg viewBox="0 0 100 12" preserveAspectRatio="none" aria-hidden="true">' +
+          '<rect x="0" y="0" width="100" height="12" rx="1.4" fill="rgba(29,29,31,.055)"></rect>' +
+          '<rect x="0" y="0" width="' + pct.toFixed(2) + '" height="12" rx="1.4" fill="' + fill + '" opacity="' + op + '"></rect>' +
+        '</svg></span>' +
+        '<span class="b-v">' + money(c.v) + '</span>';
+      bars.appendChild(b);
+    });
+
+    /* Columnas por semana (SVG a mano) */
+    var W = 500, H = 170, padB = 18, padT = 8, maxS = 1200000;
+    var gw = W / SEMANAS.length, bw = 26, gapb = 7;
+    var svg = ['<svg class="wk-svg" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Facturado y cobrado por semana, escenario simulado">'];
+    /* rejilla */
+    [0, .25, .5, .75, 1].forEach(function(f){
+      var y = padT + (H - padT - padB) * (1 - f);
+      svg.push('<line x1="0" y1="' + y.toFixed(1) + '" x2="' + W + '" y2="' + y.toFixed(1) +
+               '" stroke="rgba(29,29,31,.09)" stroke-width="1"></line>');
+    });
+    SEMANAS.forEach(function(s, i){
+      var plot = H - padT - padB;
+      var hf = s.f / maxS * plot, hc = s.c / maxS * plot;
+      var cx = gw * i + gw / 2;
+      var x1 = cx - bw - gapb / 2, x2 = cx + gapb / 2;
+      svg.push('<g class="wk-g" data-trace="' + s.id + '" style="cursor:pointer">' +
+        '<rect x="' + (gw * i) + '" y="0" width="' + gw + '" height="' + (H - padB + 4) + '" fill="transparent"></rect>' +
+        '<rect x="' + x1.toFixed(1) + '" y="' + (padT + plot - hf).toFixed(1) + '" width="' + bw + '" height="' + hf.toFixed(1) + '" rx="2" fill="#0f6862"></rect>' +
+        '<rect x="' + x2.toFixed(1) + '" y="' + (padT + plot - hc).toFixed(1) + '" width="' + bw + '" height="' + hc.toFixed(1) + '" rx="2" fill="#7ad0c6"></rect>' +
+      '</g>');
+    });
+    svg.push('<line x1="0" y1="' + (H - padB) + '" x2="' + W + '" y2="' + (H - padB) + '" stroke="rgba(29,29,31,.18)" stroke-width="1"></line>');
+    svg.push('</svg>');
+    $('#wkChart').innerHTML = svg.join('');
+
+    var wl = $('#wkLabels');
+    SEMANAS.forEach(function(s){
+      var b = document.createElement('button');
+      b.type = 'button'; b.setAttribute('data-trace', s.id);
+      b.innerHTML = '<b>' + s.nom + '</b>' + s.rango;
+      wl.appendChild(b);
+    });
+  }
+
+  /* ── Panel de trazabilidad ───────────────────────────────────── */
+  var tpEmpty = $('#tpEmpty'), tpBody = $('#tpBody');
+
+  function marcaActivos(id){
+    Array.prototype.forEach.call(document.querySelectorAll('[data-trace]'), function(el){
+      if(el.classList) el.classList.toggle('on', !!id && el.getAttribute('data-trace') === id);
+    });
+    var t = id ? TRAZAS[id] : null;
+    ['erp','comis','banco'].forEach(function(f){
+      var el = document.getElementById('f-' + f);
+      if(el) el.classList.toggle('on', !!(t && t.arch && t.arch.indexOf(f) > -1));
+    });
+  }
+
+  function cierraTraza(){
+    marcaActivos(null);
+    tpBody.hidden = true;
+    tpBody.innerHTML = '';
+    tpEmpty.hidden = false;
+  }
+
+  function esc(s){
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  function abreTraza(id){
+    var t = TRAZAS[id];
+    if(!t) return;
+    var h = [];
+    h.push('<h3>' + esc(t.tit) + '</h3>');
+    h.push('<p class="tp-val' + (t.warn ? ' warn' : '') + '">' + t.val + '<small>MXN</small></p>');
+
+    h.push('<div class="tp-meta">');
+    (t.meta || []).forEach(function(m){
+      h.push('<div class="tp-r"><span>' + esc(m[0]) + '</span><b>' + esc(m[1]) + '</b></div>');
+    });
+    h.push('</div>');
+
+    if(t.regla){ h.push('<div class="tp-rule">' + t.regla + '</div>'); }
+
+    if(t.desg){
+      h.push('<p class="tp-sec">desglose</p><ul class="tp-desg">');
+      t.desg.forEach(function(d){
+        h.push('<li' + (d[2] ? ' class="tot"' : '') + '><span>' + esc(d[0]) + '</span><span class="n">' + esc(d[1]) + '</span></li>');
+      });
+      h.push('</ul>');
+    }
+
+    if(t.rows){
+      h.push('<p class="tp-sec">renglones del archivo</p><div class="tp-tbl"><table class="rows"><thead><tr>');
+      t.cols.forEach(function(c, i){
+        h.push('<th' + (i === t.cols.length - 1 ? ' style="text-align:right"' : '') + '>' + esc(c) + '</th>');
+      });
+      h.push('</tr></thead><tbody>');
+      t.rows.forEach(function(r){
+        var flag = r[t.cols.length] === 'flag';
+        var neg  = r[t.cols.length] === 'neg';
+        h.push('<tr' + (flag ? ' class="flag"' : '') + '>');
+        for(var i = 0; i < t.cols.length; i++){
+          var last = (i === t.cols.length - 1);
+          h.push('<td' + (last ? ' class="r' + (neg ? ' neg' : '') + '"' : '') + '>' + esc(r[i]) + '</td>');
+        }
+        h.push('</tr>');
+      });
+      h.push('</tbody></table></div>');
+      if(t.mas){ h.push('<p class="tp-more">+ ' + esc(t.mas) + '</p>'); }
+    }
+
+    if(t.nota){ h.push('<p class="tp-note' + (t.warn ? ' warn' : '') + '"><b>' + (t.warn ? 'Por qué no lo cerró:' : 'Nota del agente:') + '</b> ' + esc(t.nota) + '</p>'); }
+
+    if(t.links){
+      h.push('<div class="tp-links">');
+      t.links.forEach(function(l){
+        h.push('<button type="button" data-goto="' + l[0] + '">' + esc(l[1]) + ' →</button>');
+      });
+      h.push('</div>');
+    }
+
+    tpBody.innerHTML = h.join('');
+    tpBody.hidden = false;
+    tpEmpty.hidden = true;
+    marcaActivos(id);
+
+    if(window.matchMedia && window.matchMedia('(max-width:980px)').matches){
+      $('#tp').scrollIntoView({behavior: RM ? 'auto' : 'smooth', block:'start'});
+    }
+  }
+
+  /* Delegación: cualquier cosa con data-trace abre el panel */
+  document.addEventListener('click', function(e){
+    var goto = e.target.closest ? e.target.closest('[data-goto]') : null;
+    if(goto){ abreTraza(goto.getAttribute('data-goto')); return; }
+    var el = e.target.closest ? e.target.closest('[data-trace]') : null;
+    if(el){ abreTraza(el.getAttribute('data-trace')); }
+  });
+
+  $('#btnBack').addEventListener('click', function(){
+    document.getElementById('despues').scrollIntoView({behavior: RM ? 'auto' : 'smooth', block:'start'});
+  });
+
+})();
+</script>
+</body>
+</html>
